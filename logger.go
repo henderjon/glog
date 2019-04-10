@@ -12,9 +12,9 @@ const (
 	Debug   = ": debug; "   // debug is used for debugging messages that will most likely be silenced/removed in production
 	Info    = ". info; "    // info is used for informational purposes like status messages for long running processed
 	None    = ""            // None is used when the information is intentional often intended for stdout
-	devnull = 0
-	stdout  = 1
-	stderr  = 2
+	devnull = 0             // ioutil.Discard
+	stdout  = 1             // os.Stdout
+	stderr  = 2             // os.Stderr
 )
 
 // New creates a new logger to the given writer with the given prefix. This
