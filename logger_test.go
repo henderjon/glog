@@ -2,25 +2,24 @@ package logger
 
 import (
 	"log"
-	"os"
 	"testing"
 )
 
 func TestLogger(t *testing.T) {
 	var l *log.Logger
 
-	l = New(os.Stderr, Error)
+	l = NewErrorLogger(false)
 	l.Println("Hello World")
 
-	l = New(os.Stderr, Warning)
+	l = NewWarningLogger(false)
 	l.Println("Hello World")
 
-	l = New(os.Stderr, Debug)
+	l = NewDebugLogger(false)
 	l.Println("Hello World")
 
-	l = New(os.Stderr, Info)
+	l = NewInfoLogger(false)
 	l.Println("Hello World")
 
-	l = New(os.Stderr, None)
+	l = NewStdoutLogger(false)
 	l.Println("Hello World")
 }
