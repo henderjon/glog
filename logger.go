@@ -38,9 +38,9 @@ func errWriter(verbose bool) io.Writer {
 // outWriter decides to be loud or not on STDOUT
 func outWriter(verbose bool) io.Writer {
 	var w io.Writer
-	w = os.Stdout
+	w = ioutil.Discard
 	if verbose {
-		w = ioutil.Discard
+		w = os.Stdout
 	}
 	return w
 }
