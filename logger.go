@@ -26,46 +26,46 @@ func New(w io.Writer, prefix string) *log.Logger {
 }
 
 // errWriter decides to be loud or not on STDERR
-func errWriter(silence bool) io.Writer {
+func errWriter(verbose bool) io.Writer {
 	var w io.Writer
-	w = os.Stderr
-	if silence {
-		w = ioutil.Discard
+	w = ioutil.Discard
+	if verbose {
+		w = os.Stderr
 	}
 	return w
 }
 
 // outWriter decides to be loud or not on STDOUT
-func outWriter(silence bool) io.Writer {
+func outWriter(verbose bool) io.Writer {
 	var w io.Writer
 	w = os.Stdout
-	if silence {
+	if verbose {
 		w = ioutil.Discard
 	}
 	return w
 }
 
 // NewErrorLogger returns a new logger of level: Error. These errors are when both the operation and the application can't proceed.
-func NewErrorLogger(silence bool) *log.Logger {
-	return New(errWriter(silence), Error)
+func NewErrorLogger(verbose bool) *log.Logger {
+	return New(errWriter(verbose), Error)
 }
 
 // NewWarningLogger returns a new logger of level: Warning. These warnings (alerts) are when the operation cannot proceed but the application can.
-func NewWarningLogger(silence bool) *log.Logger {
-	return New(errWriter(silence), Warning)
+func NewWarningLogger(verbose bool) *log.Logger {
+	return New(errWriter(verbose), Warning)
 }
 
 // NewDebugLogger returns a new logger of level: Debug. Debug is used for debugging messages that will most likely be silenced/removed in production.
-func NewDebugLogger(silence bool) *log.Logger {
-	return New(errWriter(silence), Debug)
+func NewDebugLogger(verbose bool) *log.Logger {
+	return New(errWriter(verbose), Debug)
 }
 
 // NewInfoLogger returns a new logger of level: Info. Info is used for informational purposes like status messages for long running processed.
-func NewInfoLogger(silence bool) *log.Logger {
-	return New(errWriter(silence), Info)
+func NewInfoLogger(verbose bool) *log.Logger {
+	return New(errWriter(verbose), Info)
 }
 
 // NewStdoutLogger returns a new logger of level: Stdout. This is used when the information is intentional; often intended for stdout.
-func NewStdoutLogger(silence bool) *log.Logger {
-	return log.New(outWriter(silence), None, 0)
+func NewStdoutLogger(verbose bool) *log.Logger {
+	return log.New(outWriter(verbose), None, 0)
 }
