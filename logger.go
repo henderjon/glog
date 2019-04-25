@@ -8,18 +8,25 @@ import (
 	"time"
 )
 
+// Level is a typed string for representing the level of a log
+type Level string
+
 // Error, Warning, Info, and Debug define prefixes for logged output that signal a level of severity.
 const (
-	Error            = "# error: "                               // errors are when both the operation and the application can't proceed
-	Warning          = "! warning: "                             // warnings (alerts) are when the operation cannot proceed but the application can
-	Debug            = ": debug: "                               // debug is used for debugging messages that will most likely be silenced/removed in production
-	Info             = ". info: "                                // info is used for informational purposes like status messages for long running processed
-	None             = ""                                        // None is used when the information is intentional often intended for stdout
-	devnull          = 0                                         // ioutil.Discard
-	stdout           = 1                                         // os.Stdout
-	stderr           = 2                                         // os.Stderr
-	DateTimeFileLine = log.Lshortfile | log.LUTC | log.LstdFlags // my usual flags set
+	Error            Level = "# error; "                               // errors are when both the operation and the application can't proceed
+	Warning          Level = "! warning; "                             // warnings (alerts) are when the operation cannot proceed but the application can
+	Debug            Level = "> debug; "                               // debug is used for debugging messages that will most likely be silenced/removed in production
+	Info             Level = "< info; "                                // info is used for informational purposes like status messages for long running processed
+	None             Level = ""                                        // None is used when the information is intentional often intended for stdout
+	devnull                = 0                                         // ioutil.Discard
+	stdout                 = 1                                         // os.Stdout
+	stderr                 = 2                                         // os.Stderr
+	DateTimeFileLine       = log.Lshortfile | log.LUTC | log.LstdFlags // my usual flags set
 )
+
+func (l Level) String() string {
+	return string(l)
+}
 
 // Now returns a
 func Now() string {

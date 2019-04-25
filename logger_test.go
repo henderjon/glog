@@ -8,9 +8,15 @@ import (
 func TestLogger(t *testing.T) {
 	var l *log.Logger
 
-	l = NewStderrLogger(false, Info, 0)
+	l = NewStderrLogger(true, Error.String(), 0)
 	l.Println("Hello World")
 
-	l = NewStdoutLogger(false, Debug, 0)
+	l = NewStdoutLogger(true, Warning.String(), 0)
+	l.Println("Hello World")
+
+	l = NewStderrLogger(true, Info.String(), 0)
+	l.Println("Hello World")
+
+	l = NewStdoutLogger(true, Debug.String(), 0)
 	l.Println("Hello World")
 }
