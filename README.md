@@ -1,2 +1,11 @@
-# logger
-a set of prefixes for use with logging output and a constructor that wraps a common set of flags
+# glog
+This is a helper module for simple logging.
+
+```golang
+type Logger interface {
+	Log(args ...interface{})
+	Fatal(args ...interface{})
+}
+```
+
+
