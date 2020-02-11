@@ -1,54 +1,35 @@
 package logger
 
-import (
-	"io"
-	"io/ioutil"
-	"log"
-	"os"
-	"time"
-)
-
-// Level is a typed string for representing the level of a log
-type Level string
-
-// Error, Warning, Info, and Debug define prefixes for logged output that signal a level of severity.
 const (
-	Error            Level = "! error; "                               // errors are when both the operation and the application can't proceed
-	Warning          Level = "! warning; "                             // warnings (alerts) are when the operation cannot proceed but the application can
-	Debug            Level = "< debug; "                               // debug is used for debugging messages that will most likely be silenced/removed in production
-	Info             Level = "< info; "                                // info is used for informational purposes like status messages for long running processed
-	None             Level = ""                                        // None is used when the information is intentional often intended for stdout
-	devnull                = 0                                         // ioutil.Discard
-	stdout                 = 1                                         // os.Stdout
-	stderr                 = 2                                         // os.Stderr
-	DateTimeFileLine       = log.Lshortfile | log.LUTC | log.LstdFlags // my usual flags set
+	// GoMySQLIdxTimestamp et al are go format strings for mysql representations
+	GoMySQLIdxTimestamp = "2006-01-02 15:04:00"
+	GoMySQLDateTime     = "2006-01-02 15:04:05"
+	GoMySQLDate         = "2006-01-02"
+	GoMySQLTime         = "15:04:05"
+
+	// PrefixFormatMinutes     = "200601021504"     // time.Now().UTC().Format(...) month-day-hour-min // Mon Jan 2 15:04:05 -0700 MST 2006
+	// PrefixFormatHours       = "2006010215"       // time.Now().UTC().Format(...) month-day-hour     // Mon Jan 2 15:04:05 -0700 MST 2006
+	// PrefixFormatDays        = "20060102"         // time.Now().UTC().Format(...) month-day          // Mon Jan 2 15:04:05 -0700 MST 2006
+	// FilePrefixFormatMinutes = "2006/01/02/15/04" // time.Now().UTC().Format(...) month-day-hour-min // Mon Jan 2 15:04:05 -0700 MST 2006
+	// FilePrefixFormatHours   = "2006/01/02/15"    // time.Now().UTC().Format(...) month-day-hour     // Mon Jan 2 15:04:05 -0700 MST 2006
+	// FilePrefixFormatDays    = "2006/01/02/"      // time.Now().UTC().Format(...) month-day          // Mon Jan 2 15:04:05 -0700 MST 2006
+
+	// MySQLFmtDateTime et al mysql datetime format strings
+	MySQLFmtDateTime = "%Y-%m-%d %H:%i:%s"
+	MySQLFmtMinute   = "%Y-%m-%d %H:%i"
+	MySQLFmtHour     = "%Y-%m-%d %H"
+	MySQLFmtDate     = "%Y-%m-%d"
+
+	// FileSep et al are ASCII control chars for data
+	FileSep   = "\034" // byte(28); \x1c – FS – File separator
+	GroupSep  = "\035" // byte(29); \x1d – GS – Group separator
+	RecordSep = "\036" // byte(30); \x1e – RS – Record separator
+	UnitSep   = "\037" // byte(31); \x1f – US – Unit separator
+
 )
 
-func (l Level) String() string {
-	return string(l)
-}
-
-// Now returns a
-func Now() string {
-	return time.Now().UTC().Format(time.RFC3339)
-}
-
-// NewStderrLogger returns a new logger that logs to stderr. The advantage of this sugar is that given a bool, this logger can be toggled on/off.
-func NewStderrLogger(verbose bool, prefix string, flag int) *log.Logger {
-	var w io.Writer
-	w = ioutil.Discard
-	if verbose {
-		w = os.Stderr
-	}
-	return log.New(w, prefix, flag)
-}
-
-// NewStdoutLogger returns a new logger that logs to stdout. The advantage of this sugar is that given a bool, this logger can be toggled on/off.
-func NewStdoutLogger(verbose bool, prefix string, flag int) *log.Logger {
-	var w io.Writer
-	w = ioutil.Discard
-	if verbose {
-		w = os.Stdout
-	}
-	return log.New(w, prefix, flag)
+// Logger is a simple interfac for logging a message and possibly exiting your program
+type Logger interface {
+	Log(args ...interface{})
+	Fatal(args ...interface{})
 }
