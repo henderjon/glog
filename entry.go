@@ -16,10 +16,10 @@ const (
 
 // Entry is a log entry
 type Entry struct {
-	Message   string        // func with brief note
-	Location  Location      // path/file.ext:line
-	Timestamp time.Time     // time.Time
-	Context   []interface{} // additional structured information to be JSON serialized
+	Message   string        `json:",omitempty"` // func with brief note
+	Location  Location      `json:",omitempty"` // path/file.ext:line
+	Timestamp time.Time     `json:",omitempty"` // time.Time
+	Context   []interface{} `json:",omitempty"` // additional structured information to be JSON serialized
 }
 
 // NewEntry create a new Entry
@@ -37,6 +37,7 @@ func (e *Entry) AppendContext(arg interface{}) *Entry {
 	return e
 }
 
+// see interface docs
 func entry(args ...interface{}) *Entry {
 	e := &Entry{}
 	for _, arg := range args {
@@ -54,9 +55,17 @@ func entry(args ...interface{}) *Entry {
 				e.AppendContext(val)
 			}
 		case time.Time:
-			e.Timestamp = val
+			if e.Timestamp.IsZero() {
+				e.Timestamp = val
+			} else {
+				e.AppendContext(val)
+			}
 		case Location:
-			e.Location = val
+			if e.Location == "" {
+				e.Location = val
+			} else {
+				e.AppendContext(val)
+			}
 		case bool:
 			if val == true {
 				e.Timestamp = time.Now().UTC()
