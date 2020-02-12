@@ -28,7 +28,7 @@ const (
 
 )
 
-// Logger is a simple interfac for logging a message and possibly exiting your program.
+// Logger is a simple interface for logging a message and possibly exiting your program.
 //
 // Log creates an entry from an unspecified group of params. Note that
 // the first string or error will be considered the Message and all

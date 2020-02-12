@@ -22,7 +22,11 @@ func (l StdLog) Fatal(args ...interface{}) {
 	l.log.Fatalln(e)
 }
 
-// NewStderrLogger creates a new debuglogger that can write to STDERR
+// NewStderrLogger creates a new debuglogger that can write to STDERR.
+// By default this logger logs to `ioutil.Discard` which is an alias for
+// /dev/null. Passing `true` to this constructor causes the output to go
+// to stderr. This behavior allows the Log and Fatal invocations to be
+// silenced and therefore left in place.
 func NewStderrLogger(stderr bool) *StdLog {
 	l := log.New(ioutil.Discard, "null ", log.Lshortfile|log.LUTC|log.LstdFlags)
 	if stderr {
@@ -31,7 +35,11 @@ func NewStderrLogger(stderr bool) *StdLog {
 	return &StdLog{l}
 }
 
-// NewStdoutLogger creates a new debuglogger that can write to STDOUT
+// NewStdoutLogger creates a new debuglogger that can write to STDOUT.
+// By default this logger logs to `ioutil.Discard` which is an alias for
+// /dev/null. Passing `true` to this constructor causes the output to go
+// to stdout. This behavior allows the Log and Fatal invocations to be
+// silenced and therefore left in place.
 func NewStdoutLogger(stdout bool) *StdLog {
 	l := log.New(ioutil.Discard, "null ", log.Lshortfile|log.LUTC|log.LstdFlags)
 	if stdout {
