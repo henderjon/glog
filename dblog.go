@@ -24,7 +24,7 @@ func NewDBLog(conn *sql.DB, table string) *DBLog {
 
 // Log fulfills the Logger interface. It writes the entry to the underlying destination
 func (l DBLog) Log(args ...interface{}) {
-	e := MakeEntry(args...)
+	e := entry(args...)
 	l.log(e)
 }
 

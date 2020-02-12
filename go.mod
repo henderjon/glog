@@ -1,4 +1,4 @@
-module github.com/henderjon/glog
+module github.com/henderjon/logger
 
 go 1.13
 

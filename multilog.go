@@ -13,7 +13,7 @@ func NewMultiLog(args ...Logger) *MultiLog {
 
 // Log fulfills the Logger interface. It writes the entry to the underlying destination
 func (l MultiLog) Log(args ...interface{}) {
-	e := MakeEntry(args...)
+	e := entry(args...)
 	for _, log := range l.logs {
 		log.Log(e)
 	}

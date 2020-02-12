@@ -22,12 +22,6 @@ type Entry struct {
 	Context   []interface{} // additional structured information to be JSON serialized
 }
 
-// AppendContext is a func to add items to an Entry's Context
-func (e *Entry) AppendContext(arg interface{}) *Entry {
-	e.Context = append(e.Context, arg)
-	return e
-}
-
 // NewEntry create a new Entry
 func NewEntry(msg string) *Entry {
 	return &Entry{
@@ -37,8 +31,13 @@ func NewEntry(msg string) *Entry {
 	}
 }
 
-// MakeEntry creates an entry from an unspecified group of params. Note that the first string or error will be considered the Message and all others will be appended to the Context
-func MakeEntry(args ...interface{}) *Entry {
+// AppendContext is a func to add items to an Entry's Context
+func (e *Entry) AppendContext(arg interface{}) *Entry {
+	e.Context = append(e.Context, arg)
+	return e
+}
+
+func entry(args ...interface{}) *Entry {
 	e := &Entry{}
 	for _, arg := range args {
 		switch val := arg.(type) {
@@ -58,6 +57,11 @@ func MakeEntry(args ...interface{}) *Entry {
 			e.Timestamp = val
 		case Location:
 			e.Location = val
+		case bool:
+			if val == true {
+				e.Timestamp = time.Now().UTC()
+				e.Location = here(3)
+			}
 		case *Entry:
 			return val // we're not allowing wrapping at this time
 		default:
@@ -74,19 +78,24 @@ func (e *Entry) String() string {
 
 // MarshalPlain is the plain text representation of an Entry
 func (e *Entry) MarshalPlain() (string, error) {
-	var str strings.Builder
-
-	str.WriteString(e.Timestamp.Format(time.RFC3339))
-	str.WriteString(TabSep)
-	str.WriteString(string(e.Location))
-	str.WriteString(TabSep)
-	str.WriteString(e.Message)
-	str.WriteString(TabSep)
-
 	var (
+		str strings.Builder
 		ctx []byte
 		err error
 	)
+
+	if !e.Timestamp.IsZero() {
+		str.WriteString(e.Timestamp.Format(GoMySQLDateTime))
+		str.WriteString(TabSep)
+	}
+
+	if e.Location != "" {
+		str.WriteString(string(e.Location))
+		str.WriteString(TabSep)
+	}
+
+	str.WriteString(e.Message)
+	str.WriteString(TabSep)
 
 	if e.Context != nil {
 		ctx, err = json.Marshal(e.Context)

@@ -8,7 +8,7 @@ import (
 )
 
 func TestString(t *testing.T) {
-	expected := "2020-02-10T13:51:12Z\tentry_test.go:17\tThis is a test\t"
+	expected := "2020-02-10 13:51:12\tentry_test.go:17\tThis is a test\t"
 
 	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
 
@@ -34,14 +34,14 @@ func TestNew(t *testing.T) {
 	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
 	actual.Timestamp = ts
 
-	expected := "2020-02-10T13:51:12Z\tentry_test.go:27\tThis is a test\t[{\"Fizz\":\"Buzz\"}]"
+	expected := "2020-02-10 13:51:12\tentry_test.go:27\tThis is a test\t[{\"Fizz\":\"Buzz\"}]"
 	if diff := cmp.Diff(actual.String(), expected); diff != "" {
 		t.Error("TestNew; (-got +want)", diff)
 	}
 }
 
 func TestMarshalBin(t *testing.T) {
-	actual := MakeEntry("This is a test", Here(), struct {
+	actual := entry("This is a test", Here(), struct {
 		Fizz string
 	}{
 		Fizz: "Buzz",
