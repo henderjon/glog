@@ -21,6 +21,9 @@ func (l MultiLog) Log(args ...interface{}) {
 
 // Fatal fulfills the Logger interface. It writes the entry to the underlying destination then exits
 func (l MultiLog) Fatal(args ...interface{}) {
-	l.Log(args...)
+	e := entry(args...)
+	for _, log := range l.logs {
+		log.Log(e)
+	}
 	os.Exit(1)
 }
