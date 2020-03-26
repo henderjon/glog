@@ -55,7 +55,7 @@ func TestMarshalBin(t *testing.T) {
 		0, 0, 0, 0, 0, 0, 0, 20, 50, 48, 50, 48, 45, 48, 50, 45, 49, 48, 84, 49, 51, 58, 53, 49, 58, 49, 50, 90, 0, 0, 0, 0, 0, 0, 0, 16, 101, 110, 116, 114, 121, 95, 116, 101, 115, 116, 46, 103, 111, 58, 52, 52, 0, 0, 0, 0, 0, 0, 0, 14, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 17, 91, 123, 34, 70, 105, 122, 122, 34, 58, 34, 66, 117, 122, 122, 34, 125, 93,
 	}
 
-	marshaled, _ := actual.MarshalBin()
+	marshaled, _ := actual.MarshalBinary()
 	if diff := cmp.Diff(marshaled, expected); diff != "" {
 		t.Error("TestMarshalBin; (-got +want)", diff)
 	}
@@ -87,7 +87,7 @@ func TestUnmarshalBin(t *testing.T) {
 		Context: []interface{}{&fb{}},
 	}
 
-	err := e.UnmarshalBin(actual)
+	err := e.UnmarshalBinary(actual)
 	if err != nil {
 		t.Error(err)
 	}

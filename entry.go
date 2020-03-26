@@ -102,12 +102,12 @@ func (e *Entry) append(arg interface{}) *Entry {
 }
 
 func (e *Entry) String() string {
-	s, _ := e.MarshalPlain()
-	return s
+	s, _ := e.MarshalText()
+	return string(s)
 }
 
-// MarshalPlain is the plain text representation of an Entry
-func (e *Entry) MarshalPlain() (string, error) {
+// MarshalText is the plain text representation of an Entry
+func (e *Entry) MarshalText() ([]byte, error) {
 	var (
 		str bytes.Buffer
 		ctx []byte
@@ -135,11 +135,11 @@ func (e *Entry) MarshalPlain() (string, error) {
 	}
 
 	str.WriteString(string(ctx))
-	return string(bytes.TrimRight(str.Bytes(), TabSep)), nil
+	return bytes.TrimRight(str.Bytes(), TabSep), nil
 }
 
-// MarshalBin is the byte/binary representation of an Entry
-func (e *Entry) MarshalBin() ([]byte, error) {
+// MarshalBinary is the byte/binary representation of an Entry
+func (e *Entry) MarshalBinary() ([]byte, error) {
 	var marshaledBin bytes.Buffer
 
 	if e == nil {
@@ -166,8 +166,8 @@ func (e *Entry) MarshalBin() ([]byte, error) {
 	return marshaledBin.Bytes(), nil
 }
 
-// UnmarshalBin is the reverse of MarshalBin and populates an Entry from the byte/binary representation
-func (e *Entry) UnmarshalBin(b []byte) error {
+// UnmarshalBinary is the reverse of MarshalBin and populates an Entry from the byte/binary representation
+func (e *Entry) UnmarshalBinary(b []byte) error {
 	if len(b) == 0 {
 		return nil
 	}
