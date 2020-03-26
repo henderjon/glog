@@ -22,6 +22,13 @@ func (l StdLog) Fatal(args ...interface{}) {
 	l.log.Fatalln(e)
 }
 
+// Write fulfills the io.Writer interface
+func (l StdLog) Write(p []byte) (n int, err error) {
+	e := entry(p)
+	l.log.Println(e)
+	return len(p), nil
+}
+
 // NewStderrLogger creates a new debuglogger that can write to STDERR.
 // By default this logger logs to `ioutil.Discard` which is an alias for
 // /dev/null. Passing `true` to this constructor causes the output to go

@@ -34,6 +34,12 @@ func (l DBLog) Fatal(args ...interface{}) {
 	os.Exit(1)
 }
 
+func (l DBLog) Write(p []byte) (n int, err error) {
+	e := entry(p)
+	l.log(e)
+	return len(p), nil
+}
+
 // log is the internal guts of the DB calls for the DBLog
 //
 // A generic table might look like this

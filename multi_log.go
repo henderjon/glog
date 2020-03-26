@@ -27,3 +27,11 @@ func (l MultiLog) Fatal(args ...interface{}) {
 	}
 	os.Exit(1)
 }
+
+func (l MultiLog) Write(p []byte) (n int, err error) {
+	e := entry(p)
+	for _, log := range l.logs {
+		log.Log(e)
+	}
+	return len(p), nil
+}

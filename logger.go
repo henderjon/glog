@@ -1,5 +1,7 @@
 package logger
 
+import "io"
+
 const (
 	// GoMySQLIdxTimestamp et al are go format strings for mysql representations
 	GoMySQLIdxTimestamp = "2006-01-02 15:04:00"
@@ -42,4 +44,5 @@ const (
 type Logger interface {
 	Log(args ...interface{})
 	Fatal(args ...interface{})
+	io.Writer
 }

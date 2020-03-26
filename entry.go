@@ -1,11 +1,11 @@
 package logger
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"log"
-	"strings"
+	"io"
 	"time"
 )
 
@@ -16,7 +16,7 @@ const (
 
 // Entry is a log entry
 type Entry struct {
-	Message   string        `json:",omitempty"` // func with brief note
+	Message   string        `json:",omitempty"` // string message
 	Location  Location      `json:",omitempty"` // path/file.ext:line
 	Timestamp time.Time     `json:",omitempty"` // time.Time
 	Context   []interface{} `json:",omitempty"` // additional structured information to be JSON serialized
@@ -31,51 +31,72 @@ func NewEntry(msg string) *Entry {
 	}
 }
 
+// see interface docs
+func entry(args ...interface{}) *Entry {
+	e := &Entry{}
+	for _, arg := range args {
+		e.append(arg)
+	}
+	return e
+}
+
+func (e *Entry) Write(p []byte) (n int, err error) {
+	e.Message = string(p)
+	return len(p), nil
+}
+
+// Append is a func to add items to an Entry's Context
+func (e *Entry) Append(arg interface{}) *Entry {
+	return e.append(arg)
+}
+
 // AppendContext is a func to add items to an Entry's Context
 func (e *Entry) AppendContext(arg interface{}) *Entry {
 	e.Context = append(e.Context, arg)
 	return e
 }
 
-// see interface docs
-func entry(args ...interface{}) *Entry {
-	e := &Entry{}
-	for _, arg := range args {
-		switch val := arg.(type) {
-		case string:
-			if e.Message == "" {
-				e.Message = val
-			} else {
-				e.AppendContext(val)
-			}
-		case error:
-			if e.Message == "" {
-				e.Message = val.Error()
-			} else {
-				e.AppendContext(val)
-			}
-		case time.Time:
-			if e.Timestamp.IsZero() {
-				e.Timestamp = val
-			} else {
-				e.AppendContext(val)
-			}
-		case Location:
-			if e.Location == "" {
-				e.Location = val
-			} else {
-				e.AppendContext(val)
-			}
-		case bool:
-			if val == true {
-				e.Timestamp = time.Now().UTC()
-				e.Location = here(3)
-			}
-		case *Entry:
-			return val // we're not allowing wrapping at this time
-		default:
+func (e *Entry) append(arg interface{}) *Entry {
+	switch val := arg.(type) {
+	case []byte:
+		if e.Message == "" {
+			e.Message = string(val)
+		} else {
 			e.AppendContext(val)
 		}
+	case string:
+		if e.Message == "" {
+			e.Message = val
+		} else {
+			e.AppendContext(val)
+		}
+	case error:
+		if e.Message == "" {
+			e.Message = val.Error()
+		} else {
+			e.AppendContext(val)
+		}
+	case time.Time:
+		if e.Timestamp.IsZero() {
+			e.Timestamp = val
+		} else {
+			e.AppendContext(val)
+		}
+	case Location:
+		if e.Location == "" {
+			e.Location = val
+		} else {
+			e.AppendContext(val)
+		}
+	case bool:
+		if val == true {
+			e.Timestamp = time.Now().UTC()
+			e.Location = here(3)
+		}
+	case *Entry:
+		return val // we're not allowing wrapping at this time
+	default:
+		e.AppendContext(val)
 	}
 	return e
 }
@@ -88,7 +109,7 @@ func (e *Entry) String() string {
 // MarshalPlain is the plain text representation of an Entry
 func (e *Entry) MarshalPlain() (string, error) {
 	var (
-		str strings.Builder
+		str bytes.Buffer
 		ctx []byte
 		err error
 	)
@@ -114,20 +135,20 @@ func (e *Entry) MarshalPlain() (string, error) {
 	}
 
 	str.WriteString(string(ctx))
-	return str.String(), nil
+	return string(bytes.TrimRight(str.Bytes(), TabSep)), nil
 }
 
 // MarshalBin is the byte/binary representation of an Entry
 func (e *Entry) MarshalBin() ([]byte, error) {
-	var marshaledBin []byte
+	var marshaledBin bytes.Buffer
 
 	if e == nil {
-		return marshaledBin, errors.New("empty entry")
+		return marshaledBin.Bytes(), errors.New("empty entry")
 	}
 
-	marshaledBin = appendString(marshaledBin, e.Timestamp.Format(time.RFC3339))
-	marshaledBin = appendString(marshaledBin, string(e.Location))
-	marshaledBin = appendString(marshaledBin, e.Message)
+	appendString(&marshaledBin, e.Timestamp.Format(time.RFC3339))
+	appendString(&marshaledBin, string(e.Location))
+	appendString(&marshaledBin, e.Message)
 
 	var (
 		ctx []byte
@@ -141,8 +162,8 @@ func (e *Entry) MarshalBin() ([]byte, error) {
 		}
 	}
 
-	marshaledBin = appendString(marshaledBin, string(ctx))
-	return marshaledBin, nil
+	appendString(&marshaledBin, string(ctx))
+	return marshaledBin.Bytes(), nil
 }
 
 // UnmarshalBin is the reverse of MarshalBin and populates an Entry from the byte/binary representation
@@ -152,8 +173,8 @@ func (e *Entry) UnmarshalBin(b []byte) error {
 	}
 
 	var err error
-
-	data, b := getBytes(b)
+	buf := bytes.NewBuffer(b)
+	data := getBytes(buf)
 	if data != nil {
 		e.Timestamp, err = time.Parse(time.RFC3339, string(data))
 		if err != nil {
@@ -161,17 +182,17 @@ func (e *Entry) UnmarshalBin(b []byte) error {
 		}
 	}
 
-	data, b = getBytes(b)
+	data = getBytes(buf)
 	if data != nil {
 		e.Location = Location(data) // @TODO double casting?
 	}
 
-	data, b = getBytes(b)
+	data = getBytes(buf)
 	if data != nil {
 		e.Message = string(data)
 	}
 
-	data, b = getBytes(b)
+	data = getBytes(buf)
 	err = json.Unmarshal(data, &e.Context)
 	if err != nil {
 		return err
@@ -180,23 +201,17 @@ func (e *Entry) UnmarshalBin(b []byte) error {
 	return nil
 }
 
-func appendString(b []byte, str string) []byte {
-	var tmp [16]byte // For use by PutUvarint.
-	N := binary.PutUvarint(tmp[:], uint64(len(str)))
-	b = append(b, tmp[:N]...)
-	b = append(b, str...)
-	return b
+func appendString(w io.Writer, str string) uint64 {
+	l := uint64(len(str))
+	binary.Write(w, binary.BigEndian, l)
+	binary.Write(w, binary.BigEndian, []byte(str))
+	return l
 }
 
-func getBytes(b []byte) (data, remaining []byte) {
-	u, N := binary.Uvarint(b)
-	if len(b) < N+int(u) {
-		log.Printf("Unmarshal error: bad encoding")
-		return nil, nil
-	}
-	if N == 0 {
-		log.Printf("Unmarshal error: bad encoding")
-		return nil, b
-	}
-	return b[N : N+int(u)], b[N+int(u):]
+func getBytes(r io.Reader) []byte {
+	var tmpL uint64
+	binary.Read(r, binary.BigEndian, &tmpL)
+	tmpB := make([]byte, int(tmpL))
+	binary.Read(r, binary.BigEndian, &tmpB)
+	return tmpB
 }
