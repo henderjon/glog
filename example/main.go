@@ -14,9 +14,9 @@ func main() {
 	out.Log("third example with defaults (time/location) with an added time.Time in the Context", true, time.Now().Add(-time.Hour))
 	ent := logger.NewEntry("fourth example with context").AppendContext(time.Now().Add(-time.Hour))
 	out.Log(ent)
-
+	out.Log(true)
 	out = logger.NewMultiLog(
-		logger.NewStdoutLogger(true),
+		logger.NewStderrLogger(true),
 		logger.NewStdoutLogger(true),
 	)
 	out.Log(ent)

@@ -35,7 +35,12 @@ func NewEntry(msg string) *Entry {
 func entry(args ...interface{}) *Entry {
 	e := &Entry{}
 	for _, arg := range args {
-		e.append(arg)
+		val, ok := arg.(*Entry)
+		if ok {
+			e.append(val.String())
+		} else {
+			e.append(arg)
+		}
 	}
 	return e
 }
@@ -91,10 +96,8 @@ func (e *Entry) append(arg interface{}) *Entry {
 	case bool:
 		if val == true {
 			e.Timestamp = time.Now().UTC()
-			e.Location = here(3)
+			e.Location = here(4)
 		}
-	case *Entry:
-		return val // we're not allowing wrapping at this time
 	default:
 		e.AppendContext(val)
 	}
