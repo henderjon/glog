@@ -16,9 +16,10 @@ const (
 
 // Entry is a log entry
 type Entry struct {
-	Message   string        `json:",omitempty"` // string message
-	Location  Location      `json:",omitempty"` // path/file.ext:line
-	Timestamp time.Time     `json:",omitempty"` // time.Time
+	Message   string    `json:",omitempty"` // string message
+	Location  Location  `json:",omitempty"` // path/file.ext:line
+	Timestamp time.Time `json:",omitempty"` // time.Time
+	Level     Level
 	Context   []interface{} `json:",omitempty"` // additional structured information to be JSON serialized
 }
 
@@ -98,6 +99,8 @@ func (e *Entry) append(arg interface{}) *Entry {
 			e.Timestamp = time.Now().UTC()
 			e.Location = here(4)
 		}
+	case Level:
+		e.Level = val
 	default:
 		e.AppendContext(val)
 	}
@@ -124,6 +127,11 @@ func (e *Entry) MarshalText() ([]byte, error) {
 
 	if e.Location != "" {
 		str.WriteString(string(e.Location))
+		str.WriteString(TabSep)
+	}
+
+	if e.Level != 0 {
+		str.WriteString(e.Level.String())
 		str.WriteString(TabSep)
 	}
 

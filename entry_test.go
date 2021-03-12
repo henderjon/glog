@@ -8,7 +8,7 @@ import (
 )
 
 func TestString(t *testing.T) {
-	expected := "2020-02-10 13:51:12\tentry_test.go:17\tThis is a test"
+	expected := "2020-02-10 13:51:12\tentry_test.go:17\tll5\tThis is a test"
 
 	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
 
@@ -16,6 +16,7 @@ func TestString(t *testing.T) {
 		Timestamp: ts,
 		Location:  Here(),
 		Message:   "This is a test",
+		Level:     Level(5),
 	}
 
 	if diff := cmp.Diff(actual.String(), expected); diff != "" {
@@ -34,12 +35,11 @@ func TestNew(t *testing.T) {
 	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
 	actual.Timestamp = ts
 
-	expected := "2020-02-10 13:51:12\tentry_test.go:27\tThis is a test\t[{\"Fizz\":\"Buzz\"}]"
+	expected := "2020-02-10 13:51:12\tentry_test.go:28\tThis is a test\t[{\"Fizz\":\"Buzz\"}]"
 	if diff := cmp.Diff(actual.String(), expected); diff != "" {
 		t.Error("TestNew; (-got +want)", diff)
 	}
 }
-
 func TestMarshalBin(t *testing.T) {
 	actual := entry("This is a test", Here(), struct {
 		Fizz string
@@ -52,7 +52,10 @@ func TestMarshalBin(t *testing.T) {
 
 	expected := []byte{
 		// if your tests fail it's because the here() call changed lines based on imports and what not...
-		0, 0, 0, 0, 0, 0, 0, 20, 50, 48, 50, 48, 45, 48, 50, 45, 49, 48, 84, 49, 51, 58, 53, 49, 58, 49, 50, 90, 0, 0, 0, 0, 0, 0, 0, 16, 101, 110, 116, 114, 121, 95, 116, 101, 115, 116, 46, 103, 111, 58, 52, 52, 0, 0, 0, 0, 0, 0, 0, 14, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 17, 91, 123, 34, 70, 105, 122, 122, 34, 58, 34, 66, 117, 122, 122, 34, 125, 93,
+		0, 0, 0, 0, 0, 0, 0, 20, 50, 48, 50, 48, 45, 48, 50, 45, 49, 48, 84, 49, 51, 58, 53, 49, 58, 49, 50, 90,
+		0, 0, 0, 0, 0, 0, 0, 16, 101, 110, 116, 114, 121, 95, 116, 101, 115, 116, 46, 103, 111, 58, 52, 52,
+		0, 0, 0, 0, 0, 0, 0, 14, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116,
+		0, 0, 0, 0, 0, 0, 0, 17, 91, 123, 34, 70, 105, 122, 122, 34, 58, 34, 66, 117, 122, 122, 34, 125, 93,
 	}
 
 	marshaled, _ := actual.MarshalBinary()
@@ -63,7 +66,10 @@ func TestMarshalBin(t *testing.T) {
 
 func TestUnmarshalBin(t *testing.T) {
 	actual := []byte{
-		0, 0, 0, 0, 0, 0, 0, 20, 50, 48, 50, 48, 45, 48, 50, 45, 49, 48, 84, 49, 51, 58, 53, 49, 58, 49, 50, 90, 0, 0, 0, 0, 0, 0, 0, 16, 101, 110, 116, 114, 121, 95, 116, 101, 115, 116, 46, 103, 111, 58, 52, 52, 0, 0, 0, 0, 0, 0, 0, 14, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 17, 91, 123, 34, 70, 105, 122, 122, 34, 58, 34, 66, 117, 122, 122, 34, 125, 93,
+		0, 0, 0, 0, 0, 0, 0, 20, 50, 48, 50, 48, 45, 48, 50, 45, 49, 48, 84, 49, 51, 58, 53, 49, 58, 49, 50, 90,
+		0, 0, 0, 0, 0, 0, 0, 16, 101, 110, 116, 114, 121, 95, 116, 101, 115, 116, 46, 103, 111, 58, 52, 52,
+		0, 0, 0, 0, 0, 0, 0, 14, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116,
+		0, 0, 0, 0, 0, 0, 0, 17, 91, 123, 34, 70, 105, 122, 122, 34, 58, 34, 66, 117, 122, 122, 34, 125, 93,
 	}
 
 	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
