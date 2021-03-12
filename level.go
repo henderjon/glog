@@ -2,8 +2,8 @@ package logger
 
 import "fmt"
 
-type Level int
+type Level uint8
 
 func (l Level) String() string {
-	return fmt.Sprintf("ll%d", l)
+	return fmt.Sprintf("l%d", l)
 }

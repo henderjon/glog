@@ -8,7 +8,7 @@ import (
 )
 
 func TestString(t *testing.T) {
-	expected := "2020-02-10 13:51:12\tentry_test.go:17\tll5\tThis is a test"
+	expected := "2020-02-10 13:51:12\tentry_test.go:17\tl5\tThis is a test"
 
 	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
 
