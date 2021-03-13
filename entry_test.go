@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -8,9 +9,9 @@ import (
 )
 
 func TestString(t *testing.T) {
-	expected := "2020-02-10 13:51:12\tentry_test.go:17\tl5\tThis is a test"
+	expected := "2020-02-10 13:51:12Z\tentry_test.go:18\tl5\tThis is a test"
 
-	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
+	ts, _ := time.Parse(GoSimpleDateTimeZone, "2020-02-10 13:51:12Z")
 
 	actual := &Entry{
 		Timestamp: ts,
@@ -32,74 +33,59 @@ func TestNew(t *testing.T) {
 		Fizz: "Buzz",
 	})
 
-	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
+	ts, _ := time.Parse(GoSimpleDateTimeZone, "2020-02-10 13:51:12Z")
 	actual.Timestamp = ts
 
-	expected := "2020-02-10 13:51:12\tentry_test.go:28\tThis is a test\t[{\"Fizz\":\"Buzz\"}]"
+	expected := "2020-02-10 13:51:12Z\tentry_test.go:29\tThis is a test\t[{\"Fizz\":\"Buzz\"}]"
 	if diff := cmp.Diff(actual.String(), expected); diff != "" {
 		t.Error("TestNew; (-got +want)", diff)
 	}
 }
-func TestMarshalBin(t *testing.T) {
-	actual := entry("This is a test", Here(), struct {
-		Fizz string
-	}{
-		Fizz: "Buzz",
-	})
 
-	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
-	actual.Timestamp = ts
+func TestJSONMarshal(t *testing.T) {
+	// expected := `{"Message":"This is a test","Location":"main.go:30","Level":51}`
+	expected := `{"Message":"This is a test","Level":51,"Context":[{"Fizz":"Buzz"}]}`
 
-	expected := []byte{
-		// if your tests fail it's because the here() call changed lines based on imports and what not...
-		0, 0, 0, 0, 0, 0, 0, 20, 50, 48, 50, 48, 45, 48, 50, 45, 49, 48, 84, 49, 51, 58, 53, 49, 58, 49, 50, 90,
-		0, 0, 0, 0, 0, 0, 0, 16, 101, 110, 116, 114, 121, 95, 116, 101, 115, 116, 46, 103, 111, 58, 52, 52,
-		0, 0, 0, 0, 0, 0, 0, 14, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116,
-		0, 0, 0, 0, 0, 0, 0, 17, 91, 123, 34, 70, 105, 122, 122, 34, 58, 34, 66, 117, 122, 122, 34, 125, 93,
-	}
-
-	marshaled, _ := actual.MarshalBinary()
-	if diff := cmp.Diff(marshaled, expected); diff != "" {
-		t.Error("TestMarshalBin; (-got +want)", diff)
-	}
-}
-
-func TestUnmarshalBin(t *testing.T) {
-	actual := []byte{
-		0, 0, 0, 0, 0, 0, 0, 20, 50, 48, 50, 48, 45, 48, 50, 45, 49, 48, 84, 49, 51, 58, 53, 49, 58, 49, 50, 90,
-		0, 0, 0, 0, 0, 0, 0, 16, 101, 110, 116, 114, 121, 95, 116, 101, 115, 116, 46, 103, 111, 58, 52, 52,
-		0, 0, 0, 0, 0, 0, 0, 14, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116,
-		0, 0, 0, 0, 0, 0, 0, 17, 91, 123, 34, 70, 105, 122, 122, 34, 58, 34, 66, 117, 122, 122, 34, 125, 93,
-	}
-
-	ts, _ := time.Parse(GoMySQLDateTime, "2020-02-10 13:51:12")
-
-	type fb struct {
-		Fizz string
-	}
-
-	expected := &Entry{
-		Timestamp: ts,
-		Location:  Location("entry_test.go:44"),
-		Message:   "This is a test",
+	s, e := json.Marshal(&Entry{
+		Message: "This is a test",
+		Level:   Level(51),
 		Context: []interface{}{
-			&fb{
+			struct {
+				Fizz string
+			}{
 				Fizz: "Buzz",
 			},
 		},
+	})
+
+	if e != nil {
+		t.Error("TestJSONMarshal;", e)
 	}
 
-	e := Entry{
-		Context: []interface{}{&fb{}},
+	if diff := cmp.Diff(string(s), expected); diff != "" {
+		t.Error("TestJSONMarshal; (-got +want)", diff)
+	}
+}
+func TestJSONUnmarshal(t *testing.T) {
+	// expected := `{"Message":"This is a test","Location":"main.go:30","Level":51}`
+	expected := &Entry{
+		Message: "This is a test",
+		Level:   Level(51),
+		// Timestamp: time.Now().UTC(),
+		Context: []interface{}{ // interface{} and JSONUnmarshal don't play nice
+			map[string]interface{}{"Fizz": string("Buzz")},
+		},
 	}
 
-	err := e.UnmarshalBinary(actual)
-	if err != nil {
-		t.Error(err)
+	var actual Entry
+	e := json.Unmarshal([]byte(`{"Message":"This is a test","Level":51,"Context":[{"Fizz":"Buzz"}]}`), &actual)
+
+	if e != nil {
+		t.Error("TestJSONUnmarshal;", e)
 	}
 
-	if diff := cmp.Diff(e, *expected); diff != "" {
-		t.Error("TestUnmarshalBin; (-got +want)", diff)
+	if diff := cmp.Diff(&actual, expected); diff != "" {
+		t.Error("TestJSONMarshal; (-got +want)", diff)
 	}
 }
 

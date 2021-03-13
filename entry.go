@@ -2,10 +2,7 @@ package logger
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/json"
-	"errors"
-	"io"
 	"time"
 )
 
@@ -18,7 +15,7 @@ const (
 type Entry struct {
 	Message   string        `json:",omitempty"` // string message
 	Location  Location      `json:",omitempty"` // path/file.ext:line
-	Timestamp time.Time     `json:",omitempty"` // time.Time
+	Timestamp time.Time     `json:",omitempty"` // time.Time; omit doesn't work on empty time.Time but does on an empty *time.Time
 	Level     Level         `json:",omitempty"` // uint8
 	Context   []interface{} `json:",omitempty"` // additional structured information to be JSON serialized
 }
@@ -121,7 +118,7 @@ func (e *Entry) MarshalText() ([]byte, error) {
 	)
 
 	if !e.Timestamp.IsZero() {
-		str.WriteString(e.Timestamp.Format(GoMySQLDateTime))
+		str.WriteString(e.Timestamp.Format(GoSimpleDateTimeZone))
 		str.WriteString(TabSep)
 	}
 
@@ -149,80 +146,38 @@ func (e *Entry) MarshalText() ([]byte, error) {
 	return bytes.TrimRight(str.Bytes(), TabSep), nil
 }
 
-// MarshalBinary is the byte/binary representation of an Entry
-func (e *Entry) MarshalBinary() ([]byte, error) {
-	var marshaledBin bytes.Buffer
-
-	if e == nil {
-		return marshaledBin.Bytes(), errors.New("empty entry")
+// MarshalJSON satisfies the Marshal interface and let's me fix time.Time over JSON
+// Using an alias with an embedded Entry let's us control the time.Time un/marshaling
+// choly.ca/post/go-json-marshalling/
+func (e *Entry) MarshalJSON() ([]byte, error) {
+	type tmp Entry
+	e2 := &struct {
+		Timestamp *time.Time `json:",omitempty"`
+		*tmp
+	}{
+		tmp: (*tmp)(e),
 	}
 
-	appendString(&marshaledBin, e.Timestamp.Format(time.RFC3339))
-	appendString(&marshaledBin, string(e.Location))
-	appendString(&marshaledBin, e.Message)
-
-	var (
-		ctx []byte
-		err error
-	)
-
-	if e.Context != nil {
-		ctx, err = json.Marshal(e.Context)
-		if err != nil {
-			ctx = nil
-		}
+	if !e.Timestamp.IsZero() {
+		e2.Timestamp = &e.Timestamp
 	}
 
-	appendString(&marshaledBin, string(ctx))
-	return marshaledBin.Bytes(), nil
+	return json.Marshal(e2)
 }
 
-// UnmarshalBinary is the reverse of MarshalBin and populates an Entry from the byte/binary representation
-func (e *Entry) UnmarshalBinary(b []byte) error {
-	if len(b) == 0 {
-		return nil
+func (e *Entry) UnmarshalJSON(data []byte) error {
+	type tmp Entry
+	e2 := &struct {
+		Timestamp *time.Time `json:",omitempty"`
+		*tmp
+	}{
+		// cast our actual Entry to our alias and embed it so that the empty
+		tmp: (*tmp)(e),
 	}
 
-	var err error
-	buf := bytes.NewBuffer(b)
-	data := getBytes(buf)
-	if data != nil {
-		e.Timestamp, err = time.Parse(time.RFC3339, string(data))
-		if err != nil {
-			return err
-		}
-	}
-
-	data = getBytes(buf)
-	if data != nil {
-		e.Location = Location(data) // @TODO double casting?
-	}
-
-	data = getBytes(buf)
-	if data != nil {
-		e.Message = string(data)
-	}
-
-	data = getBytes(buf)
-	err = json.Unmarshal(data, &e.Context)
-	if err != nil {
+	if err := json.Unmarshal(data, &e2); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func appendString(w io.Writer, str string) uint64 {
-	l := uint64(len(str))
-	binary.Write(w, binary.BigEndian, l)
-	binary.Write(w, binary.BigEndian, []byte(str))
-	return l
-}
-
-func getBytes(r io.Reader) []byte {
-	var tmpL uint64
-	binary.Read(r, binary.BigEndian, &tmpL)
-	tmpB := make([]byte, int(tmpL))
-	binary.Read(r, binary.BigEndian, &tmpB)
-	return tmpB
 }

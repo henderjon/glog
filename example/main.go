@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -22,4 +23,19 @@ func main() {
 	)
 	out.Log(ent)
 	fmt.Fprintf(out, "%d", logger.Level(5))
+	fmt.Fprintf(out, "%s", logger.Level(5))
+	s, e := json.Marshal(&logger.Entry{
+		Message:  "This is a message",
+		Level:    logger.Level(51),
+		Location: logger.Here(),
+	})
+	fmt.Println(string(s), e)
+
+	var e3 logger.Entry
+	e = json.Unmarshal(s, &e3)
+	if e != nil {
+		fmt.Println(e)
+	}
+	fmt.Printf("%+v\n", &e3)
+
 }

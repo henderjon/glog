@@ -3,24 +3,10 @@ package logger
 import "io"
 
 const (
-	// GoMySQLIdxTimestamp et al are go format strings for mysql representations
-	GoMySQLIdxTimestamp = "2006-01-02 15:04:00"
-	GoMySQLDateTime     = "2006-01-02 15:04:05"
-	GoMySQLDate         = "2006-01-02"
-	GoMySQLTime         = "15:04:05"
-
-	// PrefixFormatMinutes     = "200601021504"     // time.Now().UTC().Format(...) month-day-hour-min // Mon Jan 2 15:04:05 -0700 MST 2006
-	// PrefixFormatHours       = "2006010215"       // time.Now().UTC().Format(...) month-day-hour     // Mon Jan 2 15:04:05 -0700 MST 2006
-	// PrefixFormatDays        = "20060102"         // time.Now().UTC().Format(...) month-day          // Mon Jan 2 15:04:05 -0700 MST 2006
-	// FilePrefixFormatMinutes = "2006/01/02/15/04" // time.Now().UTC().Format(...) month-day-hour-min // Mon Jan 2 15:04:05 -0700 MST 2006
-	// FilePrefixFormatHours   = "2006/01/02/15"    // time.Now().UTC().Format(...) month-day-hour     // Mon Jan 2 15:04:05 -0700 MST 2006
-	// FilePrefixFormatDays    = "2006/01/02/"      // time.Now().UTC().Format(...) month-day          // Mon Jan 2 15:04:05 -0700 MST 2006
-
-	// MySQLFmtDateTime et al mysql datetime format strings
-	MySQLFmtDateTime = "%Y-%m-%d %H:%i:%s"
-	MySQLFmtMinute   = "%Y-%m-%d %H:%i"
-	MySQLFmtHour     = "%Y-%m-%d %H"
-	MySQLFmtDate     = "%Y-%m-%d"
+	GoSimpleDateTimeZone = "2006-01-02 15:04:05Z0700"
+	GoSimpleDateTime     = "2006-01-02 15:04:05"
+	GoSimpleDate         = "2006-01-02"
+	GoSimpleTime         = "15:04:05"
 
 	// FileSep et al are ASCII control chars for data
 	FileSep   = "\034" // byte(28); \x1c – FS – File separator
