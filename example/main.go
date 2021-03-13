@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/henderjon/logger"
@@ -20,4 +21,5 @@ func main() {
 		logger.NewStdoutLogger(true),
 	)
 	out.Log(ent)
+	fmt.Fprintf(out, "%d", logger.Level(5))
 }

@@ -16,10 +16,10 @@ const (
 
 // Entry is a log entry
 type Entry struct {
-	Message   string    `json:",omitempty"` // string message
-	Location  Location  `json:",omitempty"` // path/file.ext:line
-	Timestamp time.Time `json:",omitempty"` // time.Time
-	Level     Level
+	Message   string        `json:",omitempty"` // string message
+	Location  Location      `json:",omitempty"` // path/file.ext:line
+	Timestamp time.Time     `json:",omitempty"` // time.Time
+	Level     Level         `json:",omitempty"` // uint8
 	Context   []interface{} `json:",omitempty"` // additional structured information to be JSON serialized
 }
 
