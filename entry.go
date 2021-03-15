@@ -149,13 +149,13 @@ func (e *Entry) MarshalText() ([]byte, error) {
 // MarshalJSON satisfies the Marshal interface and let's me fix time.Time over JSON
 // Using an alias with an embedded Entry let's us control the time.Time un/marshaling
 // choly.ca/post/go-json-marshalling/
-func (e *Entry) MarshalJSON() ([]byte, error) {
+func (e Entry) MarshalJSON() ([]byte, error) {
 	type tmp Entry
 	e2 := &struct {
 		Timestamp *time.Time `json:",omitempty"`
 		*tmp
 	}{
-		tmp: (*tmp)(e),
+		tmp: (*tmp)(&e),
 	}
 
 	if !e.Timestamp.IsZero() {
@@ -177,6 +177,10 @@ func (e *Entry) UnmarshalJSON(data []byte) error {
 
 	if err := json.Unmarshal(data, &e2); err != nil {
 		return err
+	}
+
+	if e2.Timestamp != nil && !e2.Timestamp.IsZero() {
+		e.Timestamp = time.Time(*e2.Timestamp)
 	}
 
 	return nil
