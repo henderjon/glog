@@ -6,15 +6,14 @@
 
 
 
-A simple logger interface with some misc helpers.
-
 # logger
-This is a helper module for simple logging.
+This is a simple logger interface.
 
 ```golang
 type Logger interface {
 	Log(args ...interface{})
 	Fatal(args ...interface{})
+	io.Writer
 }
 ```
 
