@@ -1,0 +1,6 @@
+io.Writer (add write to interface and stdlog and dblog)
+printf()
+binary encoding using write/read
+add default location timestamp option to constructor with getOpt() funcs
+  to set up default output to avoid using true for location and allow for formatting timestamps
+

@@ -1,13 +1,19 @@
 package logger
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 )
 
 type StdLog struct {
 	log *log.Logger
+}
+
+func NewStdLogger(w io.Writer) *StdLog {
+	return &StdLog{
+		log.New(w, "", 0),
+	}
 }
 
 // Log fulfills the Logger interface. It writes the entry to the underlying destination
@@ -35,22 +41,20 @@ func (l StdLog) Write(p []byte) (n int, err error) {
 // to stderr. This behavior allows the Log and Fatal invocations to be
 // silenced and therefore left in place.
 func NewStderrLogger(stderr bool) *StdLog {
-	l := log.New(ioutil.Discard, "null ", log.Lshortfile|log.LUTC|log.LstdFlags)
 	if stderr {
-		l = log.New(os.Stderr, "", 0)
+		return NewStdLogger(os.Stderr)
 	}
-	return &StdLog{l}
+	return NewStdLogger(io.Discard)
 }
 
 // NewStdoutLogger creates a new debuglogger that can write to STDOUT.
-// By default this logger logs to `ioutil.Discard` which is an alias for
+// By default this logger logs to `io.Discard` which is an alias for
 // /dev/null. Passing `true` to this constructor causes the output to go
 // to stdout. This behavior allows the Log and Fatal invocations to be
 // silenced and therefore left in place.
 func NewStdoutLogger(stdout bool) *StdLog {
-	l := log.New(ioutil.Discard, "null ", log.Lshortfile|log.LUTC|log.LstdFlags)
 	if stdout {
-		l = log.New(os.Stdout, "", 0)
+		return NewStdLogger(os.Stdout)
 	}
-	return &StdLog{l}
+	return NewStdLogger(io.Discard)
 }

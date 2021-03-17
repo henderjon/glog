@@ -7,6 +7,8 @@ import (
 )
 
 const (
+	// Postmark is a readable way of adding both the current Timestampa nd Location to an Entry
+	Postmark = true
 	// TabSep is the seperator used when using MarshalPlain
 	TabSep = "\t"
 )
@@ -80,6 +82,10 @@ func (e *Entry) append(arg interface{}) *Entry {
 			e.AppendContext(val)
 		}
 	case time.Time:
+		if val.IsZero() {
+			val = time.Now().UTC()
+		}
+
 		if e.Timestamp.IsZero() {
 			e.Timestamp = val
 		} else {
