@@ -17,12 +17,6 @@ func main() {
 	out.Log("third example with defaults (time/location) with an added time.Time in the Context", true, time.Now().Add(-time.Hour), logger.Level(15))
 	ent := logger.NewEntry("fourth example with context").AppendContext(time.Now().Add(-time.Hour))
 	out.Log(ent)
-	out.Log(logger.Postmark)
-	out = logger.NewMultiLog(
-		logger.NewStderrLogger(true),
-		logger.NewStdoutLogger(true),
-	)
-	out.Log(ent)
 	fmt.Fprintf(out, "%d", logger.Level(5))
 	fmt.Fprintf(out, "%s", logger.Level(5))
 	s, e := json.Marshal(logger.Entry{
