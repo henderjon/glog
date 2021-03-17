@@ -10,9 +10,13 @@ import (
 )
 
 func main() {
-	var out logger.Logger
-	out = logger.NewStdLogger(os.Stderr)
-	out.Log("first example")
+	out := logger.NewStdLogger(os.Stderr)
+	pout := logger.NewPostmarkedLogger(out)
+
+	out.Log("postmarked", logger.Postmark, logger.Level(8))
+	out.Log("true-d", true, logger.Level(8))
+
+	pout.Log("first example")
 	out.Log("second example with location", logger.Here(), logger.Level(255))
 	out.Log("third example with defaults (time/location) with an added time.Time in the Context", true, time.Now().Add(-time.Hour), logger.Level(15))
 	ent := logger.NewEntry("fourth example with context").AppendContext(time.Now().Add(-time.Hour))

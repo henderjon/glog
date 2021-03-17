@@ -45,8 +45,9 @@ func entry(args ...interface{}) *Entry {
 	return e
 }
 
+// Write fulfills the io.Writer interface
 func (e *Entry) Write(p []byte) (n int, err error) {
-	e.Message = string(p)
+	e.setMessage(string(p))
 	return len(p), nil
 }
 
@@ -64,47 +65,19 @@ func (e *Entry) AppendContext(arg interface{}) *Entry {
 func (e *Entry) append(arg interface{}) *Entry {
 	switch val := arg.(type) {
 	case []byte:
-		if e.Message == "" {
-			e.Message = string(val)
-		} else {
-			e.AppendContext(val)
-		}
+		e.setMessage(string(val))
 	case string:
-		if e.Message == "" {
-			e.Message = val
-		} else {
-			e.AppendContext(val)
-		}
+		e.setMessage(val)
 	case error:
-		if e.Message == "" {
-			e.Message = val.Error()
-		} else {
-			e.AppendContext(val)
-		}
+		e.setMessage(val.Error())
 	case time.Time:
-		if val.IsZero() {
-			val = time.Now().UTC()
-		}
-
-		if e.Timestamp.IsZero() {
-			e.Timestamp = val
-		} else {
-			e.AppendContext(val)
-		}
+		e.setTimestamp(val)
 	case Location:
-		if val == "" {
-			val = here(4)
-		}
-
-		if e.Location == "" {
-			e.Location = val
-		} else {
-			e.AppendContext(val)
-		}
+		e.setLocation(val)
 	case bool:
-		if val == true {
-			e.Timestamp = time.Now().UTC()
-			e.Location = here(4)
+		if val {
+			e.setTimestamp(time.Now().UTC())
+			e.setLocation(here(4))
 		}
 	case Level:
 		e.Level = val
@@ -114,12 +87,52 @@ func (e *Entry) append(arg interface{}) *Entry {
 	return e
 }
 
+// setTimestamp will check and add the provided the Timestamp
+func (e *Entry) setTimestamp(t time.Time) {
+	if t.IsZero() {
+		t = time.Now().UTC()
+	}
+
+	if e.Timestamp.IsZero() {
+		e.Timestamp = t
+	} else {
+		e.AppendContext(t)
+	}
+}
+
+// setTimestamp will check and add the provided the Location
+func (e *Entry) setLocation(l Location) {
+	if l == "" {
+		l = here(4)
+	}
+
+	if e.Location == "" {
+		e.Location = l
+	} else {
+		e.AppendContext(l)
+	}
+}
+
+// setTimestamp will check and add the provided the Message
+func (e *Entry) setMessage(m string) {
+	if len(m) < 1 {
+		return
+	}
+
+	if e.Message == "" {
+		e.Message = m
+	} else {
+		e.AppendContext(m)
+	}
+}
+
+// String satisfies the fmt.Stringer interface
 func (e *Entry) String() string {
 	s, _ := e.MarshalText()
 	return string(s)
 }
 
-// MarshalText is the plain text representation of an Entry
+// MarshalText implements the encoding.TextMarshaler interface.
 func (e *Entry) MarshalText() ([]byte, error) {
 	var (
 		str bytes.Buffer
@@ -156,7 +169,7 @@ func (e *Entry) MarshalText() ([]byte, error) {
 	return bytes.TrimRight(str.Bytes(), TabSep), nil
 }
 
-// MarshalJSON satisfies the Marshal interface and let's me fix time.Time over JSON
+// MarshalJSON implements the json.Marshaler interface and let's me fix time.Time over JSON
 // Using an alias with an embedded Entry let's us control the time.Time un/marshaling
 // choly.ca/post/go-json-marshalling/
 func (e Entry) MarshalJSON() ([]byte, error) {
@@ -175,6 +188,7 @@ func (e Entry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e2)
 }
 
+// MarshalJSON implements the json.Unmarshaler interface.
 func (e *Entry) UnmarshalJSON(data []byte) error {
 	type tmp Entry
 	e2 := &struct {

@@ -6,30 +6,30 @@ import (
 	"os"
 )
 
-type StdLog struct {
+type StdLogger struct {
 	log *log.Logger
 }
 
-func NewStdLogger(w io.Writer) *StdLog {
-	return &StdLog{
+func NewStdLogger(w io.Writer) *StdLogger {
+	return &StdLogger{
 		log.New(w, "", 0),
 	}
 }
 
 // Log fulfills the Logger interface. It writes the entry to the underlying destination
-func (l StdLog) Log(args ...interface{}) {
+func (l StdLogger) Log(args ...interface{}) {
 	e := entry(args...)
 	l.log.Println(e)
 }
 
 // Fatal fulfills the Logger interface. It writes the entry to the underlying destination then exits
-func (l StdLog) Fatal(args ...interface{}) {
+func (l StdLogger) Fatal(args ...interface{}) {
 	e := entry(args...)
 	l.log.Fatalln(e)
 }
 
 // Write fulfills the io.Writer interface
-func (l StdLog) Write(p []byte) (n int, err error) {
+func (l StdLogger) Write(p []byte) (n int, err error) {
 	e := entry(p)
 	l.log.Println(e)
 	return len(p), nil
@@ -40,7 +40,7 @@ func (l StdLog) Write(p []byte) (n int, err error) {
 // /dev/null. Passing `true` to this constructor causes the output to go
 // to stderr. This behavior allows the Log and Fatal invocations to be
 // silenced and therefore left in place.
-func NewStderrLogger(stderr bool) *StdLog {
+func NewStderrLogger(stderr bool) *StdLogger {
 	if stderr {
 		return NewStdLogger(os.Stderr)
 	}
@@ -52,7 +52,7 @@ func NewStderrLogger(stderr bool) *StdLog {
 // /dev/null. Passing `true` to this constructor causes the output to go
 // to stdout. This behavior allows the Log and Fatal invocations to be
 // silenced and therefore left in place.
-func NewStdoutLogger(stdout bool) *StdLog {
+func NewStdoutLogger(stdout bool) *StdLogger {
 	if stdout {
 		return NewStdLogger(os.Stdout)
 	}
