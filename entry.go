@@ -92,6 +92,10 @@ func (e *Entry) append(arg interface{}) *Entry {
 			e.AppendContext(val)
 		}
 	case Location:
+		if val == "" {
+			val = here(4)
+		}
+
 		if e.Location == "" {
 			e.Location = val
 		} else {
