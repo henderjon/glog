@@ -10,6 +10,11 @@ func NewPostmarkedLogger(l Logger) *PostmarkedLogger {
 	}
 }
 
+// Logger returns the underlying Logger
+func (l PostmarkedLogger) Logger() Logger {
+	return l.log
+}
+
 // Log fulfills the Logger interface. It writes the entry to the underlying destination
 func (l PostmarkedLogger) Log(args ...interface{}) {
 	args = append(args, Postmark)
