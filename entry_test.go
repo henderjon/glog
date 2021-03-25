@@ -104,3 +104,71 @@ func TestWrite(t *testing.T) {
 		t.Error("TestString; (-got +want)", diff)
 	}
 }
+
+func TestCSV(t *testing.T) {
+	var (
+		actual   string
+		expected string
+	)
+
+	e := &Entry{
+		Message: "This is a test",
+		Level:   Level(51),
+		// Timestamp: time.Now().UTC(),
+		Context: []interface{}{
+			struct {
+				Fizz string
+			}{
+				Fizz: "Buzz",
+			},
+		},
+	}
+
+	expected = "level,l51,message,This is a test,context,W3siRml6eiI6IkJ1enoifV0\n"
+	actual, _ = e.MarshalCSV(true)
+
+	if diff := cmp.Diff(actual, expected); diff != "" {
+		t.Error("MarshalCSV; (-got +want)", diff)
+	}
+
+	expected = "l51,This is a test,W3siRml6eiI6IkJ1enoifV0\n"
+	actual, _ = e.MarshalCSV(false)
+
+	if diff := cmp.Diff(actual, expected); diff != "" {
+		t.Error("MarshalCSV; (-got +want)", diff)
+	}
+}
+
+func TestLV(t *testing.T) {
+	var (
+		actual   string
+		expected string
+	)
+
+	e := &Entry{
+		Message: "This is a test",
+		Level:   Level(51),
+		// Timestamp: time.Now().UTC(),
+		Context: []interface{}{
+			struct {
+				Fizz string
+			}{
+				Fizz: "Buzz",
+			},
+		},
+	}
+
+	expected = `6:5:level;3:l51;7:message;14:This is a test;7:context;23:W3siRml6eiI6IkJ1enoifV0;`
+	actual, _ = e.MarshalLV(true)
+
+	if diff := cmp.Diff(actual, expected); diff != "" {
+		t.Error("MarshalLV; (-got +want)", diff)
+	}
+
+	expected = `3:3:l51;14:This is a test;23:W3siRml6eiI6IkJ1enoifV0;`
+	actual, _ = e.MarshalLV(false)
+
+	if diff := cmp.Diff(actual, expected); diff != "" {
+		t.Error("MarshalLV; (-got +want)", diff)
+	}
+}

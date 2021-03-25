@@ -2,7 +2,11 @@ package logger
 
 import (
 	"bytes"
+	"encoding/base64"
+	"encoding/csv"
 	"encoding/json"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -208,4 +212,108 @@ func (e *Entry) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+// MarshalFlat creates an ordered []string out of the entry for use in CSVs and
+// other text/log storage. Optionally, the keys can be interpolated to allow for
+// breaking part large files and the json encoded context can be base64 encoded
+// to provide for easier CSV parsing.
+func (e *Entry) MarshalFlat(keys bool, b64 bool) []string {
+	var (
+		ctx []byte
+		err error
+	)
+
+	record := make([]string, 0)
+
+	if !e.Timestamp.IsZero() {
+		if keys {
+			record = append(record, `timestamp`)
+		}
+		record = append(record, e.Timestamp.Format(time.RFC3339))
+	}
+
+	if e.Location != "" {
+		if keys {
+			record = append(record, `location`)
+		}
+		record = append(record, string(e.Location))
+	}
+
+	if e.Level != 0 {
+		if keys {
+			record = append(record, `level`)
+		}
+		record = append(record, e.Level.String())
+	}
+
+	if keys {
+		record = append(record, `message`)
+	}
+	record = append(record, e.Message)
+
+	if e.Context != nil {
+		ctx, err = json.Marshal(e.Context)
+		if err == nil {
+			if keys {
+				record = append(record, `context`)
+			}
+
+			ctxStr := string(ctx)
+			if b64 {
+				ctxStr = base64.RawStdEncoding.EncodeToString(ctx)
+			}
+
+			record = append(record, ctxStr)
+		}
+	}
+
+	return record
+}
+
+// MarshalCSV encodes the entry as a CSV
+func (e *Entry) MarshalCSV(keys bool) (string, error) {
+	var (
+		str bytes.Buffer
+	)
+
+	c := csv.NewWriter(&str)
+	// c.Comma = rune(31)
+
+	record := e.MarshalFlat(keys, true)
+	c.Write(record)
+	c.Flush()
+
+	return str.String(), nil
+}
+
+// MarshalLV encodes the entry as a `n:length:value;[length:value;...]` tuple
+func (e *Entry) MarshalLV(keys bool) (string, error) {
+	record := e.MarshalFlat(keys, false)
+	return marshalRecord(record), nil
+}
+
+func marshalUnit(v string) string {
+	var s strings.Builder
+	l := len(v)
+	s.WriteString(strconv.Itoa(l))
+	s.WriteString(`:`)
+	s.WriteString(v)
+	s.WriteString(`;`)
+	return s.String()
+}
+
+func marshalRecord(vs []string) string {
+	var s strings.Builder
+	l := len(vs)
+	if l < 1 {
+		return ""
+	}
+
+	s.WriteString(strconv.Itoa(l))
+	s.WriteString(`:`)
+	for i := range vs {
+		s.WriteString(marshalUnit(vs[i]))
+	}
+	return s.String()
 }

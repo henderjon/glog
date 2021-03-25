@@ -20,6 +20,7 @@ func main() {
 	out.Log("second example with location", logger.Here(), logger.Level(255))
 	out.Log("third example with defaults (time/location) with an added time.Time in the Context", true, time.Now().Add(-time.Hour), logger.Level(15))
 	ent := logger.NewEntry("fourth example with context").AppendContext(time.Now().Add(-time.Hour))
+	ent.Level = logger.Level(5)
 	out.Log(ent)
 	fmt.Fprintf(out, "%d", logger.Level(5))
 	fmt.Fprintf(out, "%s", logger.Level(5))
@@ -29,6 +30,9 @@ func main() {
 		Level:    logger.Level(51),
 		Location: logger.Here(),
 	})
+
+	fmt.Println(ent.MarshalCSV(true))
+	fmt.Println(ent.MarshalLV(true))
 
 	fmt.Println(string(s), e)
 
