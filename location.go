@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 )
 
 // Location is the name:line of a file. Ideally returned by Here(). In usage
@@ -25,4 +26,18 @@ func here(depth int) Location {
 		l = Location(path + ":" + strconv.Itoa(line))
 	}
 	return l
+}
+
+// CurrFunc returns the name of the function in which CurrFunc is called
+func CurrFunc() string {
+	pc, _, _, ok := runtime.Caller(1)
+	if !ok {
+		return "unable to determine function"
+		// file = "?"
+		// line = 0
+	}
+
+	fn := runtime.FuncForPC(pc)
+	dotName := filepath.Ext(fn.Name())
+	return strings.TrimLeft(dotName, ".") + "()"
 }
