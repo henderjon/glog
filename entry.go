@@ -14,7 +14,9 @@ const (
 	// Postmark is a readable way of adding both the current Timestampa nd Location to an Entry
 	Postmark = true
 	// TabSep is the seperator used when using MarshalPlain
-	TabSep = "\t"
+	TabSep          = "\t"
+	UnitSeperator   = `:`
+	RecordSeperator = `;`
 )
 
 // Entry is a log entry
@@ -22,7 +24,7 @@ type Entry struct {
 	Message   string        `json:",omitempty"` // string message
 	Location  Location      `json:",omitempty"` // path/file.ext:line
 	Timestamp time.Time     `json:",omitempty"` // time.Time; omit doesn't work on empty time.Time but does on an empty *time.Time
-	Level     Level         `json:",omitempty"` // uint8
+	Flags     Flags         `json:",omitempty"`
 	Context   []interface{} `json:",omitempty"` // additional structured information to be JSON serialized
 }
 
@@ -84,7 +86,9 @@ func (e *Entry) append(arg interface{}) *Entry {
 			e.setLocation(here(4))
 		}
 	case Level:
-		e.Level = val
+		e.appendFlag(Flag(val))
+	case Flag:
+		e.appendFlag(val)
 	default:
 		e.AppendContext(val)
 	}
@@ -130,6 +134,14 @@ func (e *Entry) setMessage(m string) {
 	}
 }
 
+// func (e *Entry) resetFlags(f Flag) {
+// 	e.Flags = make(Flags, 0)
+// }
+
+func (e *Entry) appendFlag(f Flag) {
+	e.Flags = append(e.Flags, f)
+}
+
 // String satisfies the fmt.Stringer interface
 func (e *Entry) String() string {
 	s, _ := e.MarshalText()
@@ -154,8 +166,8 @@ func (e *Entry) MarshalText() ([]byte, error) {
 		str.WriteString(TabSep)
 	}
 
-	if e.Level != 0 {
-		str.WriteString(e.Level.String())
+	if len(e.Flags) > 0 {
+		str.WriteString(e.Flags.String())
 		str.WriteString(TabSep)
 	}
 
@@ -240,11 +252,11 @@ func (e *Entry) MarshalFlat(keys bool, b64 bool) []string {
 		record = append(record, string(e.Location))
 	}
 
-	if e.Level != 0 {
+	if len(e.Flags) > 0 {
 		if keys {
-			record = append(record, `level`)
+			record = append(record, `flags`)
 		}
-		record = append(record, e.Level.String())
+		record = append(record, e.Flags.String())
 	}
 
 	if keys {
@@ -297,9 +309,9 @@ func marshalUnit(v string) string {
 	var s strings.Builder
 	l := len(v)
 	s.WriteString(strconv.Itoa(l))
-	s.WriteString(`:`)
+	s.WriteString(UnitSeperator)
 	s.WriteString(v)
-	s.WriteString(`;`)
+	s.WriteString(RecordSeperator)
 	return s.String()
 }
 
@@ -311,7 +323,7 @@ func marshalRecord(vs []string) string {
 	}
 
 	s.WriteString(strconv.Itoa(l))
-	s.WriteString(`:`)
+	s.WriteString(UnitSeperator)
 	for i := range vs {
 		s.WriteString(marshalUnit(vs[i]))
 	}

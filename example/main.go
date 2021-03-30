@@ -17,17 +17,14 @@ func main() {
 	out.Log("true-d", true, logger.Level(8))
 
 	pout.Log("first example")
-	out.Log("second example with location", logger.Here(), logger.Level(255))
+	out.Log("second example with location", logger.Here(), logger.Flag(255))
 	out.Log("third example with defaults (time/location) with an added time.Time in the Context", true, time.Now().Add(-time.Hour), logger.Level(15))
 	ent := logger.NewEntry("fourth example with context").AppendContext(time.Now().Add(-time.Hour))
-	ent.Level = logger.Level(5)
 	out.Log(ent)
-	fmt.Fprintf(out, "%d", logger.Level(5))
-	fmt.Fprintf(out, "%s", logger.Level(5))
+
 	s, e := json.Marshal(logger.Entry{
 		Message: "This is a message",
 		// Timestamp: time.Now(),
-		Level:    logger.Level(51),
 		Location: logger.Here(),
 	})
 
@@ -42,5 +39,12 @@ func main() {
 		fmt.Println(e)
 	}
 	fmt.Printf("%+v\n", &e3)
+
+	ent = logger.NewEntry("fifth example with flags").AppendContext(time.Now().Add(-time.Hour))
+	// ent.Append(logger.Flag(34))
+	// ent.Append(logger.Flag(54))
+	// ent.Append(logger.Flag(2))
+	fmt.Println(ent.MarshalCSV(true))
+	fmt.Println(ent.MarshalLV(true))
 
 }

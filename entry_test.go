@@ -9,7 +9,7 @@ import (
 )
 
 func TestString(t *testing.T) {
-	expected := "2020-02-10 13:51:12Z\tentry_test.go:18\tl5\tThis is a test"
+	expected := "2020-02-10 13:51:12Z\tentry_test.go:18\tf5\tThis is a test"
 
 	ts, _ := time.Parse(GoSimpleDateTimeZone, "2020-02-10 13:51:12Z")
 
@@ -17,7 +17,7 @@ func TestString(t *testing.T) {
 		Timestamp: ts,
 		Location:  Here(),
 		Message:   "This is a test",
-		Level:     Level(5),
+		Flags:     []Flag{Flag(5)},
 	}
 
 	if diff := cmp.Diff(actual.String(), expected); diff != "" {
@@ -43,12 +43,12 @@ func TestNew(t *testing.T) {
 }
 
 func TestJSONMarshal(t *testing.T) {
-	// expected := `{"Message":"This is a test","Location":"main.go:30","Level":51}`
-	expected := `{"Message":"This is a test","Level":51,"Context":[{"Fizz":"Buzz"}]}`
+	// expected := `{"Message":"This is a test","Location":"main.go:30","Flags":51}`
+	expected := `{"Message":"This is a test","Flags":[51],"Context":[{"Fizz":"Buzz"}]}`
 
 	s, e := json.Marshal(&Entry{
 		Message: "This is a test",
-		Level:   Level(51),
+		Flags:   []Flag{Flag(51)},
 		Context: []interface{}{
 			struct {
 				Fizz string
@@ -67,10 +67,10 @@ func TestJSONMarshal(t *testing.T) {
 	}
 }
 func TestJSONUnmarshal(t *testing.T) {
-	// expected := `{"Message":"This is a test","Location":"main.go:30","Level":51}`
+	// expected := `{"Message":"This is a test","Location":"main.go:30","Flags":51}`
 	expected := &Entry{
 		Message: "This is a test",
-		Level:   Level(51),
+		Flags:   []Flag{Flag(51)},
 		// Timestamp: time.Now().UTC(),
 		Context: []interface{}{ // interface{} and JSONUnmarshal don't play nice
 			map[string]interface{}{"Fizz": string("Buzz")},
@@ -78,7 +78,7 @@ func TestJSONUnmarshal(t *testing.T) {
 	}
 
 	var actual Entry
-	e := json.Unmarshal([]byte(`{"Message":"This is a test","Level":51,"Context":[{"Fizz":"Buzz"}]}`), &actual)
+	e := json.Unmarshal([]byte(`{"Message":"This is a test","Flags":[51],"Context":[{"Fizz":"Buzz"}]}`), &actual)
 
 	if e != nil {
 		t.Error("TestJSONUnmarshal;", e)
@@ -113,7 +113,7 @@ func TestCSV(t *testing.T) {
 
 	e := &Entry{
 		Message: "This is a test",
-		Level:   Level(51),
+		Flags:   []Flag{Flag(51)},
 		// Timestamp: time.Now().UTC(),
 		Context: []interface{}{
 			struct {
@@ -124,14 +124,14 @@ func TestCSV(t *testing.T) {
 		},
 	}
 
-	expected = "level,l51,message,This is a test,context,W3siRml6eiI6IkJ1enoifV0\n"
+	expected = "flags,f51,message,This is a test,context,W3siRml6eiI6IkJ1enoifV0\n"
 	actual, _ = e.MarshalCSV(true)
 
 	if diff := cmp.Diff(actual, expected); diff != "" {
 		t.Error("MarshalCSV; (-got +want)", diff)
 	}
 
-	expected = "l51,This is a test,W3siRml6eiI6IkJ1enoifV0\n"
+	expected = "f51,This is a test,W3siRml6eiI6IkJ1enoifV0\n"
 	actual, _ = e.MarshalCSV(false)
 
 	if diff := cmp.Diff(actual, expected); diff != "" {
@@ -147,7 +147,10 @@ func TestLV(t *testing.T) {
 
 	e := &Entry{
 		Message: "This is a test",
-		Level:   Level(51),
+		Flags: []Flag{
+			Flag(51),
+			Flag(39),
+		},
 		// Timestamp: time.Now().UTC(),
 		Context: []interface{}{
 			struct {
@@ -158,14 +161,14 @@ func TestLV(t *testing.T) {
 		},
 	}
 
-	expected = `6:5:level;3:l51;7:message;14:This is a test;7:context;23:W3siRml6eiI6IkJ1enoifV0;`
+	expected = `6:5:flags;7:f51 f39;7:message;14:This is a test;7:context;17:[{"Fizz":"Buzz"}];`
 	actual, _ = e.MarshalLV(true)
 
 	if diff := cmp.Diff(actual, expected); diff != "" {
 		t.Error("MarshalLV; (-got +want)", diff)
 	}
 
-	expected = `3:3:l51;14:This is a test;23:W3siRml6eiI6IkJ1enoifV0;`
+	expected = `3:7:f51 f39;14:This is a test;17:[{"Fizz":"Buzz"}];`
 	actual, _ = e.MarshalLV(false)
 
 	if diff := cmp.Diff(actual, expected); diff != "" {
