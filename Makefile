@@ -1,3 +1,10 @@
+.PHONY: check
+check:
+	golint
+	goimports -w ./
+	gofmt -w ./
+	go vet
+
 .PHONY: test-vendor
 test-vendor:
 	go test -mod=vendor -coverprofile=coverage.out -covermode=count ./...

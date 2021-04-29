@@ -309,9 +309,9 @@ func marshalUnit(v string) string {
 	var s strings.Builder
 	l := len(v)
 	s.WriteString(strconv.Itoa(l))
-	s.WriteString(UnitSeperator)
+	s.WriteString(UnitSep)
 	s.WriteString(v)
-	s.WriteString(RecordSeperator)
+	s.WriteString(RecordSep)
 	return s.String()
 }
 
@@ -323,9 +323,10 @@ func marshalRecord(vs []string) string {
 	}
 
 	s.WriteString(strconv.Itoa(l))
-	s.WriteString(UnitSeperator)
+	s.WriteString(UnitSep)
 	for i := range vs {
 		s.WriteString(marshalUnit(vs[i]))
 	}
+	s.WriteString(GroupSep)
 	return s.String()
 }
