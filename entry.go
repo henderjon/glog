@@ -5,27 +5,26 @@ import (
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
-	"strconv"
-	"strings"
 	"time"
 )
 
 const (
-	// Postmark is a readable way of adding both the current Timestampa nd Location to an Entry
+	// Postmark is a readable way of adding both the current Timestamp and Location to an Entry
 	Postmark = true
-	// TabSep is the seperator used when using MarshalPlain
+	// TabSep is the separator used when using MarshalPlain
 	TabSep          = "\t"
 	UnitSeperator   = `:`
 	RecordSeperator = `;`
 )
 
-// Entry is a log entry
+// Entry is a log entry. It composes a number of optional data points. A Message,
+// Location, Timestamp, a blob of random contextual data, and one or more int values.
 type Entry struct {
 	Message   string        `json:",omitempty"` // string message
 	Location  Location      `json:",omitempty"` // path/file.ext:line
 	Timestamp time.Time     `json:",omitempty"` // time.Time; omit doesn't work on empty time.Time but does on an empty *time.Time
-	Flags     Flags         `json:",omitempty"`
 	Context   []interface{} `json:",omitempty"` // additional structured information to be JSON serialized
+	Tags      []Tag         `json:",omitempty"`
 }
 
 // NewEntry create a new Entry
@@ -85,9 +84,7 @@ func (e *Entry) append(arg interface{}) *Entry {
 			e.setTimestamp(time.Now().UTC())
 			e.setLocation(here(4))
 		}
-	case Level:
-		e.appendFlag(Flag(val))
-	case Flag:
+	case Tag:
 		e.appendFlag(val)
 	default:
 		e.AppendContext(val)
@@ -138,8 +135,8 @@ func (e *Entry) setMessage(m string) {
 // 	e.Flags = make(Flags, 0)
 // }
 
-func (e *Entry) appendFlag(f Flag) {
-	e.Flags = append(e.Flags, f)
+func (e *Entry) appendFlag(t Tag) {
+	e.Tags = append(e.Tags, t)
 }
 
 // String satisfies the fmt.Stringer interface
@@ -166,8 +163,8 @@ func (e *Entry) MarshalText() ([]byte, error) {
 		str.WriteString(TabSep)
 	}
 
-	if len(e.Flags) > 0 {
-		str.WriteString(e.Flags.String())
+	for _, t := range e.Tags {
+		str.WriteString(t.String())
 		str.WriteString(TabSep)
 	}
 
@@ -252,11 +249,11 @@ func (e *Entry) MarshalFlat(keys bool, b64 bool) []string {
 		record = append(record, string(e.Location))
 	}
 
-	if len(e.Flags) > 0 {
-		if keys {
-			record = append(record, `flags`)
+	for k, t := range e.Tags {
+		if k == 0 && keys {
+			record = append(record, `tags`)
 		}
-		record = append(record, e.Flags.String())
+		record = append(record, t.String())
 	}
 
 	if keys {
@@ -297,36 +294,4 @@ func (e *Entry) MarshalCSV(keys bool) (string, error) {
 	c.Flush()
 
 	return str.String(), nil
-}
-
-// MarshalLV encodes the entry as a `n:length:value;[length:value;...]` tuple
-func (e *Entry) MarshalLV(keys bool) (string, error) {
-	record := e.MarshalFlat(keys, false)
-	return marshalRecord(record), nil
-}
-
-func marshalUnit(v string) string {
-	var s strings.Builder
-	l := len(v)
-	s.WriteString(strconv.Itoa(l))
-	s.WriteString(UnitSep)
-	s.WriteString(v)
-	s.WriteString(RecordSep)
-	return s.String()
-}
-
-func marshalRecord(vs []string) string {
-	var s strings.Builder
-	l := len(vs)
-	if l < 1 {
-		return ""
-	}
-
-	s.WriteString(strconv.Itoa(l))
-	s.WriteString(UnitSep)
-	for i := range vs {
-		s.WriteString(marshalUnit(vs[i]))
-	}
-	s.WriteString(GroupSep)
-	return s.String()
 }

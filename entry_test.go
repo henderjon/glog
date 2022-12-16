@@ -9,7 +9,7 @@ import (
 )
 
 func TestString(t *testing.T) {
-	expected := "2020-02-10 13:51:12Z\tentry_test.go:18\tf5\tThis is a test"
+	expected := "2020-02-10 13:51:12Z\tentry_test.go:18\tt5\tThis is a test"
 
 	ts, _ := time.Parse(GoSimpleDateTimeZone, "2020-02-10 13:51:12Z")
 
@@ -17,7 +17,7 @@ func TestString(t *testing.T) {
 		Timestamp: ts,
 		Location:  Here(),
 		Message:   "This is a test",
-		Flags:     []Flag{Flag(5)},
+		Tags:      []Tag{5},
 	}
 
 	if diff := cmp.Diff(actual.String(), expected); diff != "" {
@@ -44,11 +44,11 @@ func TestNew(t *testing.T) {
 
 func TestJSONMarshal(t *testing.T) {
 	// expected := `{"Message":"This is a test","Location":"main.go:30","Flags":51}`
-	expected := `{"Message":"This is a test","Flags":[51],"Context":[{"Fizz":"Buzz"}]}`
+	expected := `{"Message":"This is a test","Context":[{"Fizz":"Buzz"}],"Tags":[51]}`
 
 	s, e := json.Marshal(&Entry{
 		Message: "This is a test",
-		Flags:   []Flag{Flag(51)},
+		Tags:    []Tag{51},
 		Context: []interface{}{
 			struct {
 				Fizz string
@@ -70,7 +70,7 @@ func TestJSONUnmarshal(t *testing.T) {
 	// expected := `{"Message":"This is a test","Location":"main.go:30","Flags":51}`
 	expected := &Entry{
 		Message: "This is a test",
-		Flags:   []Flag{Flag(51)},
+		Tags:    []Tag{51},
 		// Timestamp: time.Now().UTC(),
 		Context: []interface{}{ // interface{} and JSONUnmarshal don't play nice
 			map[string]interface{}{"Fizz": string("Buzz")},
@@ -78,7 +78,7 @@ func TestJSONUnmarshal(t *testing.T) {
 	}
 
 	var actual Entry
-	e := json.Unmarshal([]byte(`{"Message":"This is a test","Flags":[51],"Context":[{"Fizz":"Buzz"}]}`), &actual)
+	e := json.Unmarshal([]byte(`{"Message":"This is a test","Tags":[51],"Context":[{"Fizz":"Buzz"}]}`), &actual)
 
 	if e != nil {
 		t.Error("TestJSONUnmarshal;", e)
@@ -113,7 +113,7 @@ func TestCSV(t *testing.T) {
 
 	e := &Entry{
 		Message: "This is a test",
-		Flags:   []Flag{Flag(51)},
+		Tags:    []Tag{51},
 		// Timestamp: time.Now().UTC(),
 		Context: []interface{}{
 			struct {
@@ -124,54 +124,17 @@ func TestCSV(t *testing.T) {
 		},
 	}
 
-	expected = "flags,f51,message,This is a test,context,W3siRml6eiI6IkJ1enoifV0\n"
+	expected = "tags,t51,message,This is a test,context,W3siRml6eiI6IkJ1enoifV0\n"
 	actual, _ = e.MarshalCSV(true)
 
 	if diff := cmp.Diff(actual, expected); diff != "" {
 		t.Error("MarshalCSV; (-got +want)", diff)
 	}
 
-	expected = "f51,This is a test,W3siRml6eiI6IkJ1enoifV0\n"
+	expected = "t51,This is a test,W3siRml6eiI6IkJ1enoifV0\n"
 	actual, _ = e.MarshalCSV(false)
 
 	if diff := cmp.Diff(actual, expected); diff != "" {
 		t.Error("MarshalCSV; (-got +want)", diff)
-	}
-}
-
-func TestLV(t *testing.T) {
-	var (
-		actual   string
-		expected string
-	)
-
-	e := &Entry{
-		Message: "This is a test",
-		Flags: []Flag{
-			Flag(51),
-			Flag(39),
-		},
-		// Timestamp: time.Now().UTC(),
-		Context: []interface{}{
-			struct {
-				Fizz string
-			}{
-				Fizz: "Buzz",
-			},
-		},
-	}
-
-	expected = `6:5:flags;7:f51 f39;7:message;14:This is a test;7:context;17:[{"Fizz":"Buzz"}];`
-	actual, _ = e.MarshalLV(true)
-
-	if diff := cmp.Diff(actual, expected); diff != "" {
-		t.Error("MarshalLV; (-got +want)", diff)
-	}
-
-	expected = `3:7:f51 f39;14:This is a test;17:[{"Fizz":"Buzz"}];`
-	actual, _ = e.MarshalLV(false)
-
-	if diff := cmp.Diff(actual, expected); diff != "" {
-		t.Error("MarshalLV; (-got +want)", diff)
 	}
 }

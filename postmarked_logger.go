@@ -1,9 +1,11 @@
 package logger
 
+// A PostmarkedLogger is a regular instance of Logger but will Postmark all entries.
 type PostmarkedLogger struct {
 	log Logger
 }
 
+// NewPostmarkedLogger creates a new logger that assumes Postmark is true for all entries
 func NewPostmarkedLogger(l Logger) *PostmarkedLogger {
 	return &PostmarkedLogger{
 		log: l,

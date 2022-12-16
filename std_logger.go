@@ -6,10 +6,12 @@ import (
 	"os"
 )
 
+// A StdLogger is logger that is tied to either STDOUT ot STDIN
 type StdLogger struct {
 	log *log.Logger
 }
 
+// NewStdLogger returns a logger that writes to w
 func NewStdLogger(w io.Writer) *StdLogger {
 	return &StdLogger{
 		log.New(w, "", 0),
@@ -35,7 +37,7 @@ func (l StdLogger) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-// NewStderrLogger creates a new debuglogger that can write to STDERR.
+// NewStderrLogger creates a new logger that writes to STDERR or /dev/null.
 // By default this logger logs to `ioutil.Discard` which is an alias for
 // /dev/null. Passing `true` to this constructor causes the output to go
 // to stderr. This behavior allows the Log and Fatal invocations to be
@@ -47,7 +49,7 @@ func NewStderrLogger(stderr bool) *StdLogger {
 	return NewStdLogger(io.Discard)
 }
 
-// NewStdoutLogger creates a new debuglogger that can write to STDOUT.
+// NewStdoutLogger creates a new logger that writes to STDOUT or /dev/null.
 // By default this logger logs to `io.Discard` which is an alias for
 // /dev/null. Passing `true` to this constructor causes the output to go
 // to stdout. This behavior allows the Log and Fatal invocations to be
