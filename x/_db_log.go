@@ -42,15 +42,17 @@ func (l DBLog) Write(p []byte) (n int, err error) {
 
 // log is the internal guts of the DB calls for the DBLog
 //
-// A generic table might look like this
+// # A generic table might look like this
 //
 // CREATE TABLE "logs" (
-// 	"log_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-// 	"message" TEXT,
-// 	"location" TEXT,
-// 	"created" text,
-// 	"level" INTEGER,
-// 	"context" TEXT
+//
+//	"log_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+//	"message" TEXT,
+//	"location" TEXT,
+//	"created" text,
+//	"level" INTEGER,
+//	"context" TEXT
+//
 // );
 func (l DBLog) log(e *Entry) {
 	if e == nil || l.Conn == nil {

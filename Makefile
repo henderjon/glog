@@ -1,5 +1,6 @@
 .PHONY: check
 check:
+	go mod tidy
 	golint
 	goimports -w ./
 	gofmt -w ./
