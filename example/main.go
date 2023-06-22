@@ -18,7 +18,7 @@ func main() {
 
 	pout.Log("first example")
 	out.Log("second example with location", logger.Here(), logger.Tag(255))
-	out.Log("third example with defaults (time/location) with an added time.Time in the Context", true, time.Now().Add(-time.Hour), logger.Tag(15))
+	out.Log("third example with defaults (time/location) with an added time.Time in the Context", true, time.Now().Add(-time.Hour), logger.Tag(15), logger.Tag(16))
 	ent := logger.NewEntry("fourth example with context").AppendContext(time.Now().Add(-time.Hour))
 	out.Log(ent)
 

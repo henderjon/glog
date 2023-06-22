@@ -90,7 +90,7 @@ func (e *Entry) append(arg interface{}) *Entry {
 			e.setLocation(here(4))
 		}
 	case Tag:
-		e.appendFlag(val)
+		e.appendTag(val)
 	default:
 		e.AppendContext(val)
 	}
@@ -140,7 +140,7 @@ func (e *Entry) setMessage(m string) {
 // 	e.Flags = make(Flags, 0)
 // }
 
-func (e *Entry) appendFlag(t Tag) {
+func (e *Entry) appendTag(t Tag) {
 	e.Tags = append(e.Tags, t)
 }
 
@@ -168,13 +168,13 @@ func (e *Entry) MarshalText() ([]byte, error) {
 		str.WriteString(TabSep)
 	}
 
+	str.WriteString(e.Message)
+	str.WriteString(TabSep)
+
 	for _, t := range e.Tags {
 		str.WriteString(t.String())
 		str.WriteString(TabSep)
 	}
-
-	str.WriteString(e.Message)
-	str.WriteString(TabSep)
 
 	if e.Context != nil {
 		ctx, err = json.Marshal(e.Context)
@@ -254,17 +254,17 @@ func (e *Entry) MarshalFlat(keys bool, b64 bool) []string {
 		record = append(record, string(e.Location))
 	}
 
+	if keys {
+		record = append(record, `message`)
+	}
+	record = append(record, e.Message)
+
 	for k, t := range e.Tags {
 		if k == 0 && keys {
 			record = append(record, `tags`)
 		}
 		record = append(record, t.String())
 	}
-
-	if keys {
-		record = append(record, `message`)
-	}
-	record = append(record, e.Message)
 
 	if e.Context != nil {
 		ctx, err = json.Marshal(e.Context)
