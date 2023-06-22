@@ -44,7 +44,7 @@ func TestNew(t *testing.T) {
 
 func TestJSONMarshal(t *testing.T) {
 	// expected := `{"Message":"This is a test","Location":"main.go:30","Flags":51}`
-	expected := `{"Message":"This is a test","Context":[{"Fizz":"Buzz"}],"Tags":[51]}`
+	expected := `{"message":"This is a test","context":[{"Fizz":"Buzz"}],"tags":[51]}`
 
 	s, e := json.Marshal(&Entry{
 		Message: "This is a test",
@@ -78,7 +78,7 @@ func TestJSONUnmarshal(t *testing.T) {
 	}
 
 	var actual Entry
-	e := json.Unmarshal([]byte(`{"Message":"This is a test","Tags":[51],"Context":[{"Fizz":"Buzz"}]}`), &actual)
+	e := json.Unmarshal([]byte(`{"message":"This is a test","tags":[51],"context":[{"Fizz":"Buzz"}]}`), &actual)
 
 	if e != nil {
 		t.Error("TestJSONUnmarshal;", e)

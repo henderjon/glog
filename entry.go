@@ -20,11 +20,11 @@ const (
 // Entry is a log entry. It composes a number of optional data points. A Message,
 // Location, Timestamp, a blob of random contextual data, and one or more int values.
 type Entry struct {
-	Message   string        `json:",omitempty"` // string message
-	Location  Location      `json:",omitempty"` // path/file.ext:line
-	Timestamp time.Time     `json:",omitempty"` // time.Time; omit doesn't work on empty time.Time but does on an empty *time.Time
-	Context   []interface{} `json:",omitempty"` // additional structured information to be JSON serialized
-	Tags      []Tag         `json:",omitempty"`
+	Message   string        `json:"message,omitempty"`   // string message
+	Location  Location      `json:"location,omitempty"`  // path/file.ext:line
+	Timestamp time.Time     `json:"timestamp,omitempty"` // time.Time; omit doesn't work on empty time.Time but does on an empty *time.Time
+	Context   []interface{} `json:"context,omitempty"`   // additional structured information to be JSON serialized
+	Tags      []Tag         `json:"tags,omitempty"`
 }
 
 // NewEntry create a new Entry
@@ -48,6 +48,11 @@ func entry(args ...interface{}) *Entry {
 		}
 	}
 	return e
+}
+
+// VarEntry is a public way making new entries
+func VarEntry(args ...interface{}) *Entry {
+	return entry(args...)
 }
 
 // Write fulfills the io.Writer interface
@@ -188,7 +193,7 @@ func (e *Entry) MarshalText() ([]byte, error) {
 func (e Entry) MarshalJSON() ([]byte, error) {
 	type tmp Entry
 	e2 := &struct {
-		Timestamp *time.Time `json:",omitempty"`
+		Timestamp *time.Time `json:"timestamp,omitempty"`
 		*tmp
 	}{
 		tmp: (*tmp)(&e),
@@ -205,7 +210,7 @@ func (e Entry) MarshalJSON() ([]byte, error) {
 func (e *Entry) UnmarshalJSON(data []byte) error {
 	type tmp Entry
 	e2 := &struct {
-		Timestamp *time.Time `json:",omitempty"`
+		Timestamp *time.Time `json:"timestamp,omitempty"`
 		*tmp
 	}{
 		// cast our actual Entry to our alias and embed it so that the empty
