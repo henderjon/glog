@@ -8,24 +8,28 @@ import (
 
 // A StdLogger is logger that is tied to either STDOUT ot STDIN
 type StdLogger struct {
-	log *log.Logger
+	Postmark bool
+	log      *log.Logger
 }
 
 // NewStdLogger returns a logger that writes to w
 func NewStdLogger(w io.Writer) *StdLogger {
 	return &StdLogger{
+		false,
 		log.New(w, "", 0),
 	}
 }
 
 // Log fulfills the Logger interface. It writes the entry to the underlying destination
 func (l StdLogger) Log(args ...interface{}) {
+	args = append(args, l.Postmark)
 	e := entry(args...)
 	l.log.Println(e)
 }
 
 // Fatal fulfills the Logger interface. It writes the entry to the underlying destination then exits
 func (l StdLogger) Fatal(args ...interface{}) {
+	args = append(args, l.Postmark)
 	e := entry(args...)
 	l.log.Fatalln(e)
 }
@@ -33,6 +37,7 @@ func (l StdLogger) Fatal(args ...interface{}) {
 // Write fulfills the io.Writer interface
 func (l StdLogger) Write(p []byte) (n int, err error) {
 	e := entry(p)
+	e.append(l.Postmark)
 	l.log.Println(e)
 	return len(p), nil
 }
