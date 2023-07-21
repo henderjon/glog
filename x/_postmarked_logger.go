@@ -1,5 +1,7 @@
 package logger
 
+import "time"
+
 // A PostmarkedLogger is a regular instance of Logger but will Postmark all entries.
 type PostmarkedLogger struct {
 	log Logger
@@ -33,6 +35,6 @@ func (l PostmarkedLogger) Fatal(args ...interface{}) {
 
 // Write fulfills the io.Writer interface
 func (l PostmarkedLogger) Write(p []byte) (n int, err error) {
-	e := entry(p, Postmark)
+	e := entry(p, here(3), time.Now().UTC())
 	return l.log.Write([]byte(e.String()))
 }

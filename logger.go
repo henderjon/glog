@@ -2,20 +2,6 @@ package logger
 
 import "io"
 
-const (
-	GoSimpleDateTimeZone = "2006-01-02 15:04:05Z0700"
-	GoSimpleDateTime     = "2006-01-02 15:04:05"
-	GoSimpleDate         = "2006-01-02"
-	GoSimpleTime         = "15:04:05"
-
-	// FileSep et al are ASCII control chars for data
-	FileSep   = "\034" // byte(28); \x1c – FS – File separator
-	GroupSep  = "\035" // byte(29); \x1d – GS – Group separator
-	RecordSep = "\036" // byte(30); \x1e – RS – Record separator
-	UnitSep   = "\037" // byte(31); \x1f – US – Unit separator
-
-)
-
 // Logger is a simple interface for logging a message and possibly exiting your program.
 //
 // Log creates an entry from an unspecified group of params. Note that
