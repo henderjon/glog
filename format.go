@@ -21,8 +21,8 @@ func dropLog(depth int, o Opts, args []any) {
 		// case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		// 	fmt.Printf("uint: %q\n", v.Uint())
 		default:
-			// fmt.Printf("    type: %s; kind: %s; %+v\n", v.Type(), v.Kind(), v)
-			fmt.Printf("%s \t(%s) %+v\n", o.Prefix, v.Type(), v)
+			// fmt.Printf("%s\t(%s) [%s] %+v\n", o.Prefix, v.Type(), v.Kind(), v)
+			fmt.Printf("%s\t(%s) %+v\n", o.Prefix, v.Type(), v)
 		}
 	}
 	fmt.Printf("\n")
@@ -44,8 +44,6 @@ func rowLog(depth int, o Opts, args []any) string {
 	for _, v := range args {
 		switch v := reflect.ValueOf(v); v.Kind() {
 		default:
-			s.WriteString(fmt.Sprintf("%s", v.Kind()))
-			s.WriteString(o.UnitSep)
 			s.WriteString(fmt.Sprintf("%+v", v))
 			s.WriteString(o.UnitSep)
 		}
