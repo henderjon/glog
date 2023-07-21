@@ -44,6 +44,8 @@ func rowLog(depth int, o Opts, args []any) string {
 	for _, v := range args {
 		switch v := reflect.ValueOf(v); v.Kind() {
 		default:
+			s.WriteString(fmt.Sprintf("%s", v.Kind()))
+			s.WriteString(o.UnitSep)
 			s.WriteString(fmt.Sprintf("%+v", v))
 			s.WriteString(o.UnitSep)
 		}
