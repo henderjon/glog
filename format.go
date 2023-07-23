@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func dropLog(depth int, o Opts, args []any) {
+func dropLogFormat(depth int, o Opts, args []any) {
 	fmt.Printf("\n")
 	fmt.Printf("%s %s\n", o.Prefix, flatLoc(depth))
 	for _, v := range args {
@@ -28,7 +28,7 @@ func dropLog(depth int, o Opts, args []any) {
 	fmt.Printf("\n")
 }
 
-func rowLog(depth int, o Opts, args []any) string {
+func rowLogFormat(depth int, o Opts, args []any) string {
 	var s strings.Builder
 
 	if o.Timestamp {
