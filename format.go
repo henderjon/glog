@@ -13,6 +13,7 @@ func dropLogFormat(depth int, o Opts, args []any) {
 	fmt.Printf("\n")
 	fmt.Printf("%s %s\n", o.Prefix, flatLoc(depth))
 	for _, v := range args {
+		w := v
 		switch v := reflect.ValueOf(v); v.Kind() {
 		// case reflect.String:
 		// 	fmt.Printf("string: %q\n", v.String())
@@ -27,6 +28,10 @@ func dropLogFormat(depth int, o Opts, args []any) {
 		// 	}
 		default:
 			// fmt.Printf("%s\t(%s) [%s] %+v\n", o.Prefix, v.Type(), v.Kind(), v)
+			if !v.IsValid() {
+				fmt.Printf("%s\t(zero) %T\n", o.Prefix, reflect.TypeOf(w))
+				continue
+			}
 			fmt.Printf("%s\t(%s) %+v\n", o.Prefix, v.Type(), v)
 		}
 	}
