@@ -27,17 +27,17 @@ func NewDropLogger(w io.Writer, opts ...SetOpt) *DropLogger {
 
 // Log fulfills the Logger interface. It writes the entry to the underlying destination
 func (l DropLogger) Log(args ...any) {
-	dropLog(3, l.opts, args)
+	dropLogFormat(3, l.opts, args)
 }
 
 // Fatal fulfills the Logger interface. It writes the entry to the underlying destination then exits
 func (l DropLogger) Fatal(args ...any) {
-	dropLog(3, l.opts, args)
+	dropLogFormat(3, l.opts, args)
 	os.Exit(1)
 }
 
 // Write fulfills the io.Writer interface
 func (l DropLogger) Write(p []byte) (n int, err error) {
-	dropLog(4, l.opts, []any{string(p)})
+	dropLogFormat(4, l.opts, []any{string(p)})
 	return len(p), nil
 }

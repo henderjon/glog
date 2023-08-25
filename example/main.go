@@ -10,15 +10,24 @@ import (
 
 func main() {
 
-	l := logger.NewRowLogger(os.Stdout,
+	var e error
+
+	l := logger.NewDropLogger(os.Stdout,
 		logger.SetPrefix("!!!"),
 		logger.LogTimestamp(false),
 		logger.LogLocation(false),
 	)
 
 	fmt.Fprintf(l, "%s", "this is a new message")
+	l.Log(struct {
+		one int
+		two string
+	}{
+		one: 1,
+		two: "2",
+	})
 
-	l.Log("tags", logger.Tag(15), logger.Tag(16), "timestamp", time.Now().Add(-time.Hour))
+	l.Log(e, "tags", logger.Tag(15), logger.Tag(16), "timestamp", time.Now().Add(-time.Hour))
 
 	l.Log(func(i int) int {
 		return i

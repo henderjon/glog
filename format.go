@@ -9,10 +9,11 @@ import (
 	"time"
 )
 
-func dropLog(depth int, o Opts, args []any) {
+func dropLogFormat(depth int, o Opts, args []any) {
 	fmt.Printf("\n")
 	fmt.Printf("%s %s\n", o.Prefix, flatLoc(depth))
 	for _, v := range args {
+		w := v
 		switch v := reflect.ValueOf(v); v.Kind() {
 		// case reflect.String:
 		// 	fmt.Printf("string: %q\n", v.String())
@@ -20,15 +21,24 @@ func dropLog(depth int, o Opts, args []any) {
 		// 	fmt.Printf("int: %q\n", v.Int())
 		// case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		// 	fmt.Printf("uint: %q\n", v.Uint())
+		// case reflect.Struct:
+		// 	nf := v.NumField()
+		// 	for i := 0; i < nf; i++ {
+		// 		fmt.Printf("%s\t(%s) %s: %+v\n", o.Prefix, v.Type(), v.Type().Field(i).Name, v)
+		// 	}
 		default:
-			// fmt.Printf("    type: %s; kind: %s; %+v\n", v.Type(), v.Kind(), v)
-			fmt.Printf("%s \t(%s) %+v\n", o.Prefix, v.Type(), v)
+			// fmt.Printf("%s\t(%s) [%s] %+v\n", o.Prefix, v.Type(), v.Kind(), v)
+			if !v.IsValid() {
+				fmt.Printf("%s\t(zero) %T\n", o.Prefix, reflect.TypeOf(w))
+				continue
+			}
+			fmt.Printf("%s\t(%s) %+v\n", o.Prefix, v.Type(), v)
 		}
 	}
 	fmt.Printf("\n")
 }
 
-func rowLog(depth int, o Opts, args []any) string {
+func rowLogFormat(depth int, o Opts, args []any) string {
 	var s strings.Builder
 
 	if o.Timestamp {
